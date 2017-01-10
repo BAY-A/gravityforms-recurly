@@ -59,7 +59,7 @@ class GFRecurly_Feed_Settings_Fields extends GFPaymentAddOn{
 					),
 				),
 				array(
-					'title'      => 'Subscription Settings',
+					'title'      => 'Subscription Payment Settings',
 					'dependency' => array(
 						'field'  => 'transactionType',
 						'values' => array( 'subscription' ),
@@ -67,19 +67,19 @@ class GFRecurly_Feed_Settings_Fields extends GFPaymentAddOn{
 					'fields'     => array(
 						array(
 							'name'     => 'subscriptionPlan',
-							'label'    => esc_html__( 'Subscriptino Plan Name', 'gravityforms-recurly' ),
+							'label'    => esc_html__( 'Subscription Plan Name', 'gravityforms-recurly' ),
 							'type'     => 'select',
 							'choices'  => $this->subscription_plan_choices(),
 							'required' => true,
-							'tooltip'  => '<h6>' . esc_html__( 'Subscriptino Plan Name', 'gravityforms-recurly' ) . '</h6>' . esc_html__( "Select which field determines the Recurly subscription plan name.", 'gravityforms-recurly' ),
+							'tooltip'  => '<h6>' . esc_html__( 'Subscription Plan Name', 'gravityforms-recurly' ) . '</h6>' . esc_html__( "Select which field determines the Recurly subscription plan name.", 'gravityforms-recurly' ),
 						),
 					),
 				),
 				array(
-					'title'      => 'Products &amp; Services Settings',
+					'title'      => 'Single Payment Settings',
 					'dependency' => array(
 						'field'  => 'transactionType',
-						'values' => array( 'product', 'donation' ),
+						'values' => array( 'product' ),
 					),
 					'fields'     => array(
 						array(
@@ -94,12 +94,20 @@ class GFRecurly_Feed_Settings_Fields extends GFPaymentAddOn{
 					),
 				),
 				array(
-					'title'      => esc_html__( 'Other Settings', 'gravityforms-recurly' ),
+					'title'      => esc_html__( 'Customer Information', 'gravityforms-recurly' ),
 					'dependency' => array(
 						'field'  => 'transactionType',
-						'values' => array( 'subscription', 'product', 'donation' ),
+						'values' => array( 'subscription', 'product', 'updateBilling' ),
 					),
-					'fields'     => $this->other_settings_fields(),
+					'fields' => array(
+						array(
+							'name'      => 'billingInformation',
+							'label'     => esc_html__( 'Billing Information', 'gravityforms-recurly' ),
+							'type'      => 'field_map',
+							'field_map' => $this->recurly_billing_info_fields(),
+							'tooltip'   => '<h6>' . esc_html__( 'Billing Information', 'gravityforms-recurly' ) . '</h6>' . esc_html__( 'Map your Form Fields to the available listed fields.', 'gravityforms-recurly' )
+						),
+					),
 				),
 
 			);
@@ -107,16 +115,16 @@ class GFRecurly_Feed_Settings_Fields extends GFPaymentAddOn{
 
 	public function subscription_plan_choices() {
 		$form = $this->get_current_form();
-		$string_choices = $this->get_string_choices( $form );
+		$string_choices = $this->get_possible_string_return_value_choices( $form );
 
 		return $string_choices;
 	}
 
-	public function get_string_choices( $form ) {
+	public function get_possible_string_return_value_choices( $form ) {
 
-		$fields  = GFAPI::get_fields_by_type( $form, array( 'hidden', 'text', 'select', 'checkbox' ) );
+		$fields  = GFAPI::get_fields_by_type( $form, array( 'hidden', 'text', 'select', 'checkbox', 'product' ) );
 		$choices = array(
-			array( 'label' => esc_html__( 'Select a text field', 'gravityforms' ), 'value' => '' ),
+			array( 'label' => esc_html__( 'Select a text field', 'gravityforms-recurly' ), 'value' => '' ),
 		);
 
 		foreach ( $fields as $field ) {
@@ -126,5 +134,22 @@ class GFRecurly_Feed_Settings_Fields extends GFPaymentAddOn{
 		}
 
 		return $choices;
+	}
+
+	public function recurly_billing_info_fields() {
+
+		$fields = array(
+			array( 'name' => 'first_name', 'label' => esc_html__( 'First Name', 'gravityforms-recurly' ), 'required' => false ),
+			array( 'name' => 'last_name', 'label' => esc_html__( 'Last Name', 'gravityforms-recurly' ), 'required' => false ),
+			array( 'name' => 'email', 'label' => esc_html__( 'Email', 'gravityforms-recurly' ), 'required' => false ),
+			array( 'name' => 'address', 'label' => esc_html__( 'Address', 'gravityforms-recurly' ), 'required' => false ),
+			array( 'name' => 'address2', 'label' => esc_html__( 'Address 2', 'gravityforms-recurly' ), 'required' => false ),
+			array( 'name' => 'city', 'label' => esc_html__( 'City', 'gravityforms-recurly' ), 'required' => false ),
+			array( 'name' => 'state', 'label' => esc_html__( 'State', 'gravityforms-recurly' ), 'required' => false ),
+			array( 'name' => 'zip', 'label' => esc_html__( 'Zip', 'gravityforms-recurly' ), 'required' => false ),
+			array( 'name' => 'country', 'label' => esc_html__( 'Country', 'gravityforms-recurly' ), 'required' => false ),
+		);
+
+		return $fields;
 	}
 }
