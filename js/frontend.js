@@ -34,12 +34,7 @@ window.GFRecurly = null;
             recurly.configure( {
 							publicKey: this.api_key,
 							currency: 'USD',
-							required: ['cvv'],
-							fields: {
-								first_name: {
-						      selector: '#recurly-number'
-						    },
-							}
+							required: ['cvv']
 						} );
 
             // initialize spinner
@@ -54,8 +49,6 @@ window.GFRecurly = null;
                     event.preventDefault();
                     $(this).data('GFRecurlysubmitting', true);
                 }
-
-								GFRecurlyObj.setDefaultValuesIfNonePresent( GFRecurlyObj );
 
                 var form = $(this),
                     ccInputPrefix = 'input_' + GFRecurlyObj.formId + '_' + GFRecurlyObj.ccFieldId + '_';
@@ -136,37 +129,6 @@ window.GFRecurly = null;
 
             return this.ccPage == currentPage;
         }
-
-				this.setDefaultValuesIfNonePresent = function( GFRecurlyObj ){
-
-					var form = $( 'form#gform_' + GFRecurlyObj.formId ),
-					ccInputPrefix = 'input_' + GFRecurlyObj.formId + '_' + GFRecurlyObj.ccFieldId + '_',
-					cc = {
-							number:     form.find( '#' + ccInputPrefix + '1' ),
-							exp_month:  form.find( '#' + ccInputPrefix + '2_month_hidden' ),
-							exp_year:   form.find( '#' + ccInputPrefix + '2_year_hidden' ),
-							cvc:        form.find( '#' + ccInputPrefix + '3' ),
-							name:       form.find( '#' + ccInputPrefix + '5')
-					}
-
-					if( !$( cc.number ).val() ){
-
-						$( cc.number ).val( 0 );
-					}
-					if( !$( cc.exp_month ).val() ){
-
-						$( cc.exp_month ).val( 0 );
-					}
-					if( !$( cc.exp_year ).val() ){
-
-						$( cc.exp_year ).val( 0 );
-					}
-					if( !$( cc.cvc ).val() ){
-
-						$( cc.cvc ).val( 0 );
-					}
-
-				}
 
         this.getCurrentPageNumber = function() {
             var currentPageInput = $( '#gform_source_page_number_' + this.formId );
