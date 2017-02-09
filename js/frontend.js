@@ -15,6 +15,16 @@ window.GFRecurly = null;
         $( hidden_version_id ).attr( 'value', source_sel_val );
     }
 
+		updateHiddenNumber = function ( sel ) {
+
+			var source_sel_id = $( sel ).attr( 'id' );
+			var hidden_version_iframe = $( '#' + source_sel_id + '_hidden' ).find( 'iframe' );
+			var source_sel_val = $( sel ).val();
+
+			console.log( $( hidden_version_iframe ).contents().find( '#recurly-hosted-field-input' ) );
+			$( hidden_version_iframe ).contents().find( '#recurly-hosted-field-input' ).attr( 'value', source_sel_val );
+		}
+
     GFRecurly = function ( args ) {
 
         for ( var prop in args ) {
@@ -34,7 +44,14 @@ window.GFRecurly = null;
             recurly.configure( {
                 publicKey: this.api_key,
                 currency: 'USD',
-                required: [ 'cvv' ]
+                required: [
+									'cvv',
+									'address1',
+									'city',
+									'state',
+									'postal_code',
+									'country'
+								]
             } );
 
             // initialize spinner

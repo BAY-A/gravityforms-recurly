@@ -100,7 +100,8 @@ class GFRecurly_Init{
 				foreach( $field->inputs as $field_input ){
 
 					if( $field->id.'.1' == $field_input['id'] ){
-						$content = str_replace( "name='input_".$field_input['id']."'", "data-recurly='number' name='input_".$field_input['id']."'", $content );
+						$content = str_replace( "name='input_".$field_input['id']."'", "onchange='updateHiddenNumber( jQuery(this) )' name='input_".$field_input['id']."'", $content );
+						$content = str_replace( "<label for='input_".$form_id.'_'.$field->id."_1", "<div data-recurly='number' id='input_".$field->id."_hidden' style='display: none;'></div><label for='input_".$form_id.'_'.$field->id."_1", $content );
 					}
 					if( $field->id.'.2_month' == $field_input['id'] ){
 						$content = str_replace( "id='input_".$form_id.'_'.$field->id."_2_month'", "onchange='updateHiddenCCFieldVersions( jQuery(this) )' id='input_".$form_id.'_'.$field->id."_2_month'", $content );
