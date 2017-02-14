@@ -2,6 +2,9 @@
 if ( method_exists( 'GFForms', 'include_payment_addon_framework' ) ) {
 
 	require_once GF_RECURLY_DIR . 'includes/recurly-api/lib/recurly.php';
+	require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-data-io.php';
+	require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-api-utils.php';
+	require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-utils.php';
 
 	GFForms::include_payment_addon_framework();
 

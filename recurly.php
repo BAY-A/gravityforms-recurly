@@ -34,3 +34,13 @@ class GF_Recurly_Bootstrap {
 function gf_recurly() {
 	return GFRecurly::get_instance();
 }
+
+register_deactivation_hook( __FILE__, function() {
+	require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-deactivate.php';
+	GFRecurly_Deactivator::deactivate();
+} );
+
+register_activation_hook( __FILE__, function() {
+	require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-activate.php';
+	GFRecurly_Activator::activate();
+} );

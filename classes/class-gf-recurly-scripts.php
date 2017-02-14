@@ -27,15 +27,6 @@ class GFRecurly_Scripts{
 
 		return array(
 			array(
-				'handle'  => 'recurly_js',
-				'src'     => 'https://js.recurly.com/v4/recurly.js',
-				'version' => $this->gfpaymentaddon->get_version(),
-				'deps'    => array(),
-				'enqueue' => array(
-					array( $this, 'frontend_script_callback' ),
-				),
-			),
-			array(
 				'handle'  => 'gf_recurly_frontend',
 				'src'     => $this->gfpaymentaddon->get_base_url() . '/js/frontend.js',
 				'version' => $this->gfpaymentaddon->get_version(),
