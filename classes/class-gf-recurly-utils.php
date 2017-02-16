@@ -68,13 +68,14 @@ class GFRecurly_Utils{
 		$subscription = GFRecurly_API_Utils::recurly_subscription_object_to_array( $subscription );
 
 		$transaction_id = rgar( $subscription, 'plan_code' );
-		$transaction_amount = rgar( $subscription, 'unit_amount_in_cents' );
+		$transaction_amount = GFRecurly_Utils::cents_to_dollars( rgar( $subscription, 'unit_amount_in_cents' ) );
 		$transaction_currency = rgar( $subscription, 'currency' );
 		$entry_id = rgar( $entry, 'id' );
 
 		GFRecurly_Utils::log_debug( "Gravity Forms + Recurly: Adding new subscription data: entry, {$entry_id}, false, subscription_payment, {$transaction_id}, active, {$transaction_amount}, {$transaction_currency}, ".print_r( $subscription, true ) );
 
-		return GFRecurly_Data_IO::insert_transaction(
+		/* Insert into GF Recurly DB table */
+		$gf_recurly_id = GFRecurly_Data_IO::insert_transaction(
 			'entry',
 			$entry_id,
 			false,
@@ -85,6 +86,12 @@ class GFRecurly_Utils{
 			$transaction_currency,
 			$subscription
 		);
+
+		if( $gf_recurly_id ){
+
+			/* Link Entry with the DB table unique ID */
+			gform_update_meta( $entry_id, 'gf_recurly_entry', $gf_recurly_id );
+		}
 	}
 
 	public static function create_wp_user( $first_name, $last_name, $user_login, $user_email = false ){

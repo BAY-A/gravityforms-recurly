@@ -115,7 +115,15 @@ class GFRecurly_Subscribe{
 					'amount' => 0
 				);
 			}
-		} catch (Recurly_ValidationError $e) {}
+		} catch (Exception $e) {
+
+			return array(
+				'is_success' => false,
+				'error_message' => $e->getMessage(),
+				'subscription_id' => '',
+				'amount' => 0
+			);
+		}
 
 		$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Account doesn't exist" );
 		return array(

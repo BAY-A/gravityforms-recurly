@@ -65,8 +65,24 @@ class GFRecurly_Data {
 		global $wpdb;
 		$table_name = GFRecurly_Data::get_recurly_table_name();
 
-		$sql = $wpdb->prepare( "INSERT INTO $table_name (method, entry_id, user_id, transaction_type, transaction_id, status, amount, currency, date_created, data) values (%s, %d, %d, %s, %s, %s, %f, %s, utc_timestamp(), %s, %s)", $method, $entry_id, $user_id, $transaction_type, $transaction_id, $status, $amount, $currency, wp_json_encode( $data ) );
-		$wpdb->query( $sql );
+		$wpdb->query(
+			$wpdb->prepare(
+				"
+				INSERT INTO $table_name
+				 (method, entry_id, user_id, transaction_type, transaction_id, status, amount, currency, date_created, data)
+				  values (%s, %d, %d, %s, %s, %s, %f, %s, utc_timestamp(), %s)
+				",
+				$method,
+				$entry_id,
+				$user_id,
+				$transaction_type,
+				$transaction_id,
+				$status,
+				$amount,
+				$currency,
+				wp_json_encode( $data )
+			)
+		);
 		$id = $wpdb->insert_id;
 
 		do_action( 'gform_post_payment_transaction', $id, $entry_id, $transaction_type, $transaction_id, $amount, false );
