@@ -82,12 +82,20 @@ if ( method_exists( 'GFForms', 'include_payment_addon_framework' ) ) {
 			return GFRecurly_Subscribe::instance( $this )->subscribe( $feed, $submission_data, $form, $entry );
 		}
 
+		public function process_feed( $feed, $entry, $form ) {
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-process-feed.php';
+			return GFRecurly_Process_Feed::instance( $this )->process_feed( $feed, $entry, $form );
+		}
+
+		//JS Response
 		public function get_recurly_js_response() {
 
 			return json_decode( rgpost( 'recurly_response' ) );
 
 		}
 
+		//Add-on Version
 		public function get_version() {
 
 			return $this->_version;

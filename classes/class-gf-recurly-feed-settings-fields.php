@@ -14,103 +14,151 @@ class GFRecurly_Feed_Settings_Fields extends GFPaymentAddOn{
 
 	public function do_feed_settings_fields() {
 
-			return array(
+		$core_feed_settings_fields = array(
 
-				array(
-					'description' => '',
-					'fields'      => array(
-						array(
-							'name'     => 'feedName',
-							'label'    => esc_html__( 'Name', 'gravityforms-recurly' ),
-							'type'     => 'text',
-							'class'    => 'medium',
-							'required' => true,
-							'tooltip'  => '<h6>' . esc_html__( 'Name', 'gravityforms-recurly' ) . '</h6>' . esc_html__( 'Enter a feed name to uniquely identify this setup.', 'gravityforms-recurly' ),
-						),
-						array(
-							'name'     => 'transactionType',
-							'label'    => esc_html__( 'Transaction Type', 'gravityforms-recurly' ),
-							'type'     => 'select',
-							'onchange' => "jQuery(this).parents('form').submit();",
-							'choices'  => array(
-								array(
-									'label' => esc_html__( 'Select a transaction type', 'gravityforms-recurly' ),
-									'value' => '',
-								),
-								array(
-									'label' => esc_html__( 'Single Payment', 'gravityforms-recurly' ),
-									'value' => 'product',
-								),
-								array(
-									'label' => esc_html__( 'Subscription Payment', 'gravityforms-recurly' ),
-									'value' => 'subscription',
-								),
-								array(
-									'label' => esc_html__( 'Update Billing Information', 'gravityforms-recurly' ),
-									'value' => 'updateBilling',
-								),
-								array(
-									'label' => esc_html__( 'Update Subscription', 'gravityforms-recurly' ),
-									'value' => 'updateSubscription',
-								),
+			array(
+				'description' => '',
+				'fields'      => array(
+					array(
+						'name'     => 'feedName',
+						'label'    => esc_html__( 'Name', 'gravityforms-recurly' ),
+						'type'     => 'text',
+						'class'    => 'medium',
+						'required' => true,
+						'tooltip'  => '<h6>' . esc_html__( 'Name', 'gravityforms-recurly' ) . '</h6>' . esc_html__( 'Enter a feed name to uniquely identify this setup.', 'gravityforms-recurly' ),
+					),
+					array(
+						'name'     => 'transactionType',
+						'label'    => esc_html__( 'Transaction Type', 'gravityforms-recurly' ),
+						'type'     => 'select',
+						'onchange' => "jQuery(this).parents('form').submit();",
+						'choices'  => array(
+							array(
+								'label' => esc_html__( 'Select a transaction type', 'gravityforms-recurly' ),
+								'value' => '',
 							),
-							'tooltip'  => '<h6>' . esc_html__( 'Transaction Type', 'gravityforms-recurly' ) . '</h6>' . esc_html__( 'Select a transaction type.', 'gravityforms-recurly' ),
+							array(
+								'label' => esc_html__( 'Single Payment', 'gravityforms-recurly' ),
+								'value' => 'product',
+							),
+							array(
+								'label' => esc_html__( 'Subscription Payment', 'gravityforms-recurly' ),
+								'value' => 'subscription',
+							),
+							array(
+								'label' => esc_html__( 'Update Billing Information', 'gravityforms-recurly' ),
+								'value' => 'updateBilling',
+							),
+							array(
+								'label' => esc_html__( 'Update Subscription', 'gravityforms-recurly' ),
+								'value' => 'updateSubscription',
+							),
 						),
+						'tooltip'  => '<h6>' . esc_html__( 'Transaction Type', 'gravityforms-recurly' ) . '</h6>' . esc_html__( 'Select a transaction type.', 'gravityforms-recurly' ),
 					),
 				),
-				array(
-					'title'      => 'Subscription Payment Settings',
-					'dependency' => array(
-						'field'  => 'transactionType',
-						'values' => array( 'subscription' ),
-					),
-					'fields'     => array(
-						array(
-							'name'     => 'subscriptionPlan',
-							'label'    => esc_html__( 'Subscription Plan Name', 'gravityforms-recurly' ),
-							'type'     => 'select',
-							'choices'  => $this->subscription_plan_choices(),
-							'required' => true,
-							'tooltip'  => '<h6>' . esc_html__( 'Subscription Plan Name', 'gravityforms-recurly' ) . '</h6>' . esc_html__( "Select which field determines the Recurly subscription plan name.", 'gravityforms-recurly' ),
-						),
+			),
+			array(
+				'title'      => 'Subscription Payment Settings',
+				'dependency' => array(
+					'field'  => 'transactionType',
+					'values' => array( 'subscription' ),
+				),
+				'fields'     => array(
+					array(
+						'name'     => 'subscriptionPlan',
+						'label'    => esc_html__( 'Subscription Plan Name', 'gravityforms-recurly' ),
+						'type'     => 'select',
+						'choices'  => $this->subscription_plan_choices(),
+						'required' => true,
+						'tooltip'  => '<h6>' . esc_html__( 'Subscription Plan Name', 'gravityforms-recurly' ) . '</h6>' . esc_html__( "Select which field determines the Recurly subscription plan name.", 'gravityforms-recurly' ),
 					),
 				),
-				array(
-					'title'      => 'Single Payment Settings',
-					'dependency' => array(
-						'field'  => 'transactionType',
-						'values' => array( 'product' ),
-					),
-					'fields'     => array(
-						array(
-							'name'          => 'paymentAmount',
-							'label'         => esc_html__( 'Payment Amount', 'gravityforms-recurly' ),
-							'type'          => 'select',
-							'choices'       => $this->product_amount_choices(),
-							'required'      => true,
-							'default_value' => 'form_total',
-							'tooltip'       => '<h6>' . esc_html__( 'Payment Amount', 'gravityforms-recurly' ) . '</h6>' . esc_html__( "Select which field determines the payment amount, or select 'Form Total' to use the total of all pricing fields as the payment amount.", 'gravityforms-recurly' ),
-						),
+			),
+			array(
+				'title'      => 'Single Payment Settings',
+				'dependency' => array(
+					'field'  => 'transactionType',
+					'values' => array( 'product' ),
+				),
+				'fields'     => array(
+					array(
+						'name'          => 'paymentAmount',
+						'label'         => esc_html__( 'Payment Amount', 'gravityforms-recurly' ),
+						'type'          => 'select',
+						'choices'       => $this->product_amount_choices(),
+						'required'      => true,
+						'default_value' => 'form_total',
+						'tooltip'       => '<h6>' . esc_html__( 'Payment Amount', 'gravityforms-recurly' ) . '</h6>' . esc_html__( "Select which field determines the payment amount, or select 'Form Total' to use the total of all pricing fields as the payment amount.", 'gravityforms-recurly' ),
 					),
 				),
-				array(
-					'title'      => esc_html__( 'Customer Information', 'gravityforms-recurly' ),
-					'dependency' => array(
-						'field'  => 'transactionType',
-						'values' => array( 'subscription', 'product', 'updateBilling' ),
-					),
-					'fields' => array(
-						array(
-							'name'      => 'billingInformation',
-							'label'     => esc_html__( 'Billing Information', 'gravityforms-recurly' ),
-							'type'      => 'field_map',
-							'field_map' => $this->recurly_billing_info_fields(),
-							'tooltip'   => '<h6>' . esc_html__( 'Billing Information', 'gravityforms-recurly' ) . '</h6>' . esc_html__( 'Map your Form Fields to the available listed fields.', 'gravityforms-recurly' )
-						),
+			),
+			array(
+				'title'      => esc_html__( 'Customer Information', 'gravityforms-recurly' ),
+				'dependency' => array(
+					'field'  => 'transactionType',
+					'values' => array( 'subscription', 'product', 'updateBilling' ),
+				),
+				'fields' => array(
+					array(
+						'name'      => 'billingInformation',
+						'label'     => esc_html__( 'Billing Information', 'gravityforms-recurly' ),
+						'type'      => 'field_map',
+						'field_map' => $this->recurly_billing_info_fields(),
+						'tooltip'   => '<h6>' . esc_html__( 'Billing Information', 'gravityforms-recurly' ) . '</h6>' . esc_html__( 'Map your Form Fields to the available listed fields.', 'gravityforms-recurly' )
 					),
 				),
+			),
 
+		);
+
+		if ( class_exists( 'GFUser' ) ) {
+
+			$core_feed_settings_fields[] = array(
+				'title'      => esc_html__( 'User Registration', 'gravityforms-recurly' ),
+				'dependency' => array(
+					'field'  => 'transactionType',
+					'values' => array( 'subscription', 'product' ),
+				),
+				'fields' => array(
+					array(
+						'name'      => 'autoLoginNewUsers',
+						'label'     => esc_html__( 'Automatically log-in new users?', 'gravityforms-recurly' ),
+						'type'      => 'select',
+						'choices' => array(
+						 	array(
+								'label' => esc_html__( 'Yes', 'gravityforms-recurly' ),
+								'value' => 1
+							),
+							array(
+								'label' => esc_html__( 'No', 'gravityforms-recurly' ),
+								'value' => 0
+							),
+						),
+						'default_value' => 0,
+						'tooltip'   => '<h6>' . esc_html__( 'Automatically log-in new users?', 'gravityforms-recurly' ) . '</h6>' . esc_html__( 'When a new user is created after paying via Recurly, should they be automatically logged-in? Great for upsells, etc..', 'gravityforms-recurly' )
+					),
+				),
 			);
+		}
+
+		$core_feed_settings_fields[] = array(
+			'title'      => esc_html__( 'Conditional Logic', 'gravityforms-recurly' ),
+			'dependency' => array(
+				'field'  => 'transactionType',
+				'values' => array( 'subscription', 'product', 'updateBilling', 'updateSubscription' ),
+			),
+			'fields' => array(
+				array(
+					'name'       => 'optin',
+					'label'      => esc_html__( 'Activate Recurly Condition?', 'gravityforms-recurly' ),
+					'tooltip'   => '<h6>' . esc_html__( 'Activate Recurly Condition?', 'gravityforms-recurly' ) . '</h6>' . esc_html__( 'Should payment only be sent to Recurly after a certain condition is met?', 'gravityforms-recurly' ),
+					'type'       => 'feed_condition',
+				),
+			),
+		);
+
+		return $core_feed_settings_fields;
 	}
 
 	public function subscription_plan_choices() {

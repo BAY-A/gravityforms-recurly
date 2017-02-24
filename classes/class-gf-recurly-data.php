@@ -91,8 +91,11 @@ class GFRecurly_Data {
 	}
 
 	public static function update_transaction( $entry_id, $property_name, $property_value ) {
+
 		global $wpdb;
 		$table_name = GFRecurly_Data::get_recurly_table_name();
+
+		$property_value = wp_json_encode( $property_value );
 
 		$result = $wpdb->update( $table_name, array( $property_name => $property_value ), array( 'entry_id' => $entry_id ) );
 	}
@@ -119,10 +122,9 @@ class GFRecurly_Data {
 
 				case 'entry':
 
-					$sql                                          = $wpdb->prepare( "SELECT * FROM  {$table_name}
-				WHERE entry_id=%d", $value );
+					$sql = $wpdb->prepare( "SELECT * FROM  {$table_name} WHERE entry_id=%d", $value );
 
-					$transaction                                  = $wpdb->get_row( $sql, ARRAY_A );
+					$transaction = $wpdb->get_row( $sql, ARRAY_A );
 
 					if ( ! empty( $transaction ) ) {
 
@@ -134,8 +136,7 @@ class GFRecurly_Data {
 
 				case 'user_id':
 
-					$sql         = $wpdb->prepare( "SELECT * FROM  {$table_name}
-				WHERE user_id=%d", $value );
+					$sql = $wpdb->prepare( "SELECT * FROM  {$table_name} WHERE user_id=%d", $value );
 
 					$transaction = $wpdb->get_results( $sql, ARRAY_A );
 
@@ -149,10 +150,9 @@ class GFRecurly_Data {
 
 				case 'transaction_id':
 
-					$sql                                          = $wpdb->prepare( "SELECT * FROM  {$table_name}
-				WHERE transaction_id=%s", $value );
+					$sql = $wpdb->prepare( "SELECT * FROM  {$table_name} WHERE transaction_id=%s", $value );
 
-					$transaction                                  = $wpdb->get_row( $sql, ARRAY_A );
+					$transaction = $wpdb->get_row( $sql, ARRAY_A );
 
 					if ( ! empty( $transaction ) ) {
 
@@ -161,6 +161,20 @@ class GFRecurly_Data {
 					}
 
 					break;
+
+				case 'id':
+
+					$sql = $wpdb->prepare( "SELECT * FROM  {$table_name} WHERE id=%d", $value );
+
+					$transaction = $wpdb->get_row( $sql, ARRAY_A );
+
+					if ( ! empty( $transaction ) ) {
+
+						$transaction['data'] = GFFormsModel::unserialize( $transaction['data'] );
+
+					}
+
+						break;
 
 			}
 		}

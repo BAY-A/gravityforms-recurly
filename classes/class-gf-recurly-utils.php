@@ -87,25 +87,25 @@ class GFRecurly_Utils{
 			$subscription
 		);
 
-		if( $gf_recurly_id ){
+		if ( $gf_recurly_id ) {
 
 			/* Link Entry with the DB table unique ID */
 			gform_update_meta( $entry_id, 'gf_recurly_entry', $gf_recurly_id );
 		}
 	}
 
-	public static function create_wp_user( $first_name, $last_name, $user_login, $user_email = false ){
+	public static function create_wp_user( $first_name, $last_name, $user_login, $user_email = false ) {
 
 		$user_args = array(
 			'role'       => apply_filters( 'gfrecurly_user_role', 'recurly_customer' ),
 			'user_pass'  => wp_generate_password(),
 			'user_login' => $user_login,
 			'first_name' => $first_name,
-			'last_name'  => $last_name
+			'last_name'  => $last_name,
 		);
 
 		if ( $user_email ) {
-			$user_args[ 'user_email' ] = $user_email;
+			$user_args['user_email'] = $user_email;
 		}
 
 		GFRecurly_Utils::log_debug( sprintf( __( 'Inserting new user — user_login: %s, first_name: %s, last_name: %s, user_email: %s', 'gravityforms-recurly' ), $user_login, $first_name, $last_name, $user_email ) );
@@ -143,21 +143,116 @@ class GFRecurly_Utils{
 			GFRecurly_Utils::log_debug( "User creation failed: {$error_message}" );
 
 			//notify admin
-			$notification[ 'subject' ] = sprintf( __( "Unable to Create WordPress User for New Recurly Customer: %s", 'gravityforms-recurly' ), $name );
-			$notification[ 'message' ] = sprintf( __( "Form: %s\\%s\r\n", 'gravityforms-recurly' ), $form['id'], $form['title'] );
-			$notification[ 'message' ] .= sprintf( __( "Entry ID: %s\r\n", 'gravityforms-recurly' ), $entry['id'] );
-			$notification[ 'message' ] .= sprintf( __( "Customer ID: %s\r\n", 'gravityforms-recurly' ), $account_code );
-			$notification[ 'message' ] .= __( "Error message: {$error_message}\r\n", 'gravityforms-recurly' );
-			$notification[ 'to' ] = $notification[ 'from' ] = get_option( 'admin_email' );
+			$notification['subject'] = sprintf( __( 'Unable to Create WordPress User for New Recurly Customer: %s', 'gravityforms-recurly' ), $name );
+			$notification['message'] = sprintf( __( "Form: %s\\%s\r\n", 'gravityforms-recurly' ), $form['id'], $form['title'] );
+			$notification['message'] .= sprintf( __( "Entry ID: %s\r\n", 'gravityforms-recurly' ), $entry['id'] );
+			$notification['message'] .= sprintf( __( "Customer ID: %s\r\n", 'gravityforms-recurly' ), $account_code );
+			$notification['message'] .= __( "Error message: {$error_message}\r\n", 'gravityforms-recurly' );
+			$notification['to'] = $notification['from'] = get_option( 'admin_email' );
 
 			GFRecurly_Utils::notify_internal_error( null, $notification, $form, $entry );
 
 		} else {
 
-			RGFormsModel::update_lead_property( $entry[ 'id' ], 'created_by', $user_id );
+			RGFormsModel::update_lead_property( $entry['id'], 'created_by', $user_id );
 
-			GFRecurly_Data_IO::update_transaction( $entry[ 'id' ], 'user_id', $user_id );
+			GFRecurly_Data_IO::update_transaction( $entry['id'], 'user_id', $user_id );
 
 		}
+	}
+
+	public static function are_plugin_settings_entered( $gfpaymentaddon ) {
+
+		$gf_recurly_subdomain = $gfpaymentaddon->get_plugin_setting( 'gf_recurly_subdomain' );
+		$gf_recurly_api_key = $gfpaymentaddon->get_plugin_setting( 'gf_recurly_api_key' );
+
+		if ( rgblank( $gf_recurly_subdomain ) || rgblank( $gf_recurly_api_key ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	public static function are_any_feeds_active( $active_feeds = array() ) {
+
+		$found_any = false;
+		if ( ! empty( $active_feeds ) ) {
+
+			foreach ( $active_feeds as $a_feed ) {
+
+				if ( $a_feed['is_active'] ) {
+
+					$found_any = true;
+					break;
+				}
+			}
+		}
+
+		return $found_any;
+	}
+
+	public static function save_recurly_info_wp_user( $user_id, $entry_id, $recurly_subscription ) {
+
+		GFRecurly_Utils::save_recurly_account_code( $user_id, rgars( $recurly_subscription, 'account/account_code' ) );
+		GFRecurly_Utils::maybe_save_recurly_account_has_billing_info( $user_id, rgar( $recurly_subscription, 'account' ) );
+		GFRecurly_Utils::maybe_save_recurly_account_currency( $user_id, rgar( $recurly_subscription, 'currency' ) );
+		GFRecurly_Utils::maybe_save_recurly_subscription( $user_id, $recurly_subscription );
+		gform_update_meta( $entry_id, 'gfrecurly_user_id', $user_id );
+
+		do_action( 'gf_recurly_gform_user_registered_save_recurly_info_to_wp_user', $user_id, $entry_id, $recurly_subscription );
+	}
+
+	public static function save_recurly_account_code( $user_id, $account_code ) {
+
+		update_user_meta( $user_id, 'recurly_account_code', $account_code );
+	}
+
+	public static function maybe_save_recurly_account_has_billing_info( $user_id, $account ) {
+
+		$has_billing_info = rgar( $account, 'billing_info' ) ? true : false;
+		update_user_meta( $user_id, 'recurly_account_has_billing_info', $has_billing_info );
+	}
+
+	public static function maybe_save_recurly_account_currency( $user_id, $currency = 'USD' ) {
+
+		update_user_meta( $user_id, 'recurly_account_currency', $currency );
+	}
+
+	public static function maybe_save_recurly_subscription( $user_id, $sub = array() ) {
+
+		$acc = rgar( $sub, 'account' );
+
+		if ( 'active' === rgar( $acc, 'state' ) ) {
+
+			$transaction = rgar( $sub, 'plan_code' );
+			if ( ! in_array( $transaction, GFRecurly_Utils::get_active_recurly_subscriptions( $user_id ) ) ) {
+
+				GFRecurly_Utils::add_active_recurly_subscription_to_user( $user_id, $transaction );
+			}
+		}
+	}
+
+	public static function get_active_recurly_subscriptions( $user_id ) {
+
+		return get_user_meta( $user_id, 'recurly_account_transactions' ) ?: array();
+	}
+
+	public static function add_active_recurly_subscription_to_user( $user_id, $transaction ) {
+
+		$existing_transactions = GFRecurly_Utils::get_active_recurly_subscriptions( $user_id );
+		$existing_transactions[] = $transaction;
+		update_user_meta( $user_id, 'recurly_account_transactions', $existing_transactions );
+	}
+
+	public static function add_customer_metadata( $user_id, $entry_id, $recurly_subscription ) {
+
+		$recurly_subscription['user_id'] = $user_id;
+		$recurly_subscription['entry_id'] = $entry_id;
+
+		$recurly_subscription = apply_filters( 'gf_recurly_gform_user_registered_add_customer_metadata', $recurly_subscription, $user_id, $entry_id );
+
+		GFRecurly_Data_IO::update_transaction( $entry_id, 'data', $recurly_subscription );
+
+		do_action( 'gf_recurly_gform_user_registered_add_customer_metadata', $user_id, $entry_id, $recurly_subscription );
 	}
 }

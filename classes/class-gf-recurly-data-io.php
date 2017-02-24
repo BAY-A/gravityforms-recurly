@@ -16,7 +16,7 @@ class GFRecurly_Data_IO {
 
 	public static function insert_transaction( $t_method = 'entry', $t_entry_id = 0, $t_user_id = false, $t_transaction_type = 'single_payment', $t_transaction_id = '', $t_status = '', $t_amount = 0, $t_currency = 'USD', $t_data = null ) {
 
-		if( !$t_user_id ){
+		if ( ! $t_user_id ) {
 
 			$t_user_id = get_current_user_id();
 		}
@@ -35,13 +35,19 @@ class GFRecurly_Data_IO {
 	}
 
 	public static function update_transaction( $entry_id, $property_name, $property_value ) {
-
 		return GFRecurly_Data::update_transaction( $entry_id, $property_name, $property_value );
 	}
 
-	public static function get_all_recurly_data_for_user( $user_id = -1 ){
-
+	public static function get_all_recurly_data_for_user( $user_id = -1 ) {
 		return GFRecurly_Data::get_transaction_by( 'user_id', $user_id );
+	}
+
+	public static function get_transaction_by_table_id( $table_id = -1 ) {
+		return GFRecurly_Data::get_transaction_by( 'id', $table_id );
+	}
+
+	public static function get_transaction_by_entry_id( $entry_id = -1 ) {
+		return GFRecurly_Data::get_transaction_by( 'entry', $entry_id );
 	}
 }
 ?>

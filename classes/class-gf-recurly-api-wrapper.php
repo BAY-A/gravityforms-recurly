@@ -240,4 +240,23 @@ class GFRecurly_API_Wrapper {
 			return false;
 		}
 	}
+
+	public function maybe_get_account_billing_info( $account_code = -1 ) {
+
+		if ( -1 === $account_code ) {
+
+			return false;
+		}
+
+		try {
+
+			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Getting account billing info" );
+			return Recurly_BillingInfo::get( $account_code, $this->client );
+
+		} catch ( Recurly_NotFoundError $e ) {
+
+			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Could not get account billing info (doesn't exist): {$e->getMessage()}" );
+			return false;
+		}
+	}
 }
