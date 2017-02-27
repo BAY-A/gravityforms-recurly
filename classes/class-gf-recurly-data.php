@@ -60,7 +60,7 @@ class GFRecurly_Data {
 
 	public static function insert_transaction( $method, $entry_id, $user_id = null, $transaction_type, $transaction_id, $status, $amount, $currency, $data = '' ) {
 
-		GFRecurly_Utils::log_debug( 'Inserting transaction into transaction table' );
+		GFRecurly_Utils::log_debug( 'Running `insert_transaction`' );
 
 		global $wpdb;
 		$table_name = GFRecurly_Data::get_recurly_table_name();
@@ -90,14 +90,19 @@ class GFRecurly_Data {
 		return $id;
 	}
 
-	public static function update_transaction( $entry_id, $property_name, $property_value ) {
+	public static function update_transaction( $entry_id, $property_arr ) {
 
 		global $wpdb;
+
 		$table_name = GFRecurly_Data::get_recurly_table_name();
 
-		$property_value = wp_json_encode( $property_value );
+		array_walk( $property_arr, function( &$aitem ) {
+			$aitem = wp_json_encode( $aitem );
+		} );
 
-		$result = $wpdb->update( $table_name, array( $property_name => $property_value ), array( 'entry_id' => $entry_id ) );
+		GFRecurly_Utils::log_debug( 'Running `update_transaction`: ' . print_r( $property_arr, true ) );
+
+		$result = $wpdb->update( $table_name, $property_arr, array( 'entry_id' => $entry_id ) );
 	}
 
 	public static function get_all_form_ids() {

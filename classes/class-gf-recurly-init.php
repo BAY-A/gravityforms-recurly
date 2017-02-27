@@ -18,7 +18,6 @@ class GFRecurly_Init{
 		$this->gfpaymentaddon = $gfpaymentaddon;
 
 		add_filter( 'gform_register_init_scripts', array( $this, 'register_init_scripts' ), 10, 3 );
-		add_action( 'gform_user_registered', array( $this, 'gform_user_registered' ), 10, 4 );
 	}
 
 	public function register_init_scripts( $form, $field_values, $is_ajax ) {
@@ -67,11 +66,5 @@ class GFRecurly_Init{
 
 		return $table_exists;
 
-	}
-
-	public function gform_user_registered( $user_id, $feed, $entry, $password ) {
-
-		require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-gform-user-registered.php';
-		return GFRecurly_User_Registered::instance( $this->gfpaymentaddon )->gform_user_registered( $user_id, $feed, $entry, $password );
 	}
 }

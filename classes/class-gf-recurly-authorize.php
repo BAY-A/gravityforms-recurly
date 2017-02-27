@@ -1,6 +1,6 @@
 <?php
 
-class GFRecurly_Subscribe{
+class GFRecurly_Authorize{
 
 	protected static $_instance = null;
 	protected $gfpaymentaddon = null;
@@ -22,9 +22,9 @@ class GFRecurly_Subscribe{
 		$this->gfrecurlyapi = GFRecurly_API_Wrapper::instance( $gfpaymentaddon );
 	}
 
-	public function subscribe( $feed, $submission_data, $form, $entry ) {
+	public function authorize( $feed, $submission_data, $form, $entry ) {
 
-		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Starting subscribe function' );
+		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Starting authorize function' );
 		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: feed: '.print_r( $feed, true ) );
 		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: submission_data: '.print_r( $submission_data, true ) );
 		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: form: '.print_r( $form, true ) );
@@ -32,12 +32,12 @@ class GFRecurly_Subscribe{
 
 		$feed_meta = rgar( $feed, 'meta' );
 
-		$recurly_plan_entry_id = rgar( $feed_meta, 'subscriptionPlan' );
 		$first_name_entry_id = rgar( $feed_meta, 'billingInformation_first_name' );
 		$last_name_entry_id = rgar( $feed_meta, 'billingInformation_last_name' );
+		$payment_desc_entry_id = rgar( $feed_meta, 'paymentDesc' ) ?: false;
 
-		$recurly_plan_code = trim( rgar( $entry, $recurly_plan_entry_id ) );
-		$recurly_plan_code = strpos( $recurly_plan_code, '|' ) !== false ? explode( '|', $recurly_plan_code )[0] : $recurly_plan_code;
+		/* Payment Description (optional) */
+		$payment_desc = $payment_desc_entry_id ? rgar( $entry, $payment_desc_entry_id ) : '';
 
 		/* Payment Amount */
 		$payment_amount = rgar( $submission_data, 'payment_amount' );
@@ -65,7 +65,7 @@ class GFRecurly_Subscribe{
 		/* Account Code */
 		$account_code = GFRecurly_Utils::random_string( 49 );
 
-		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Trying creation of subscription' );
+		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Trying creation of charge' );
 
 		try {
 
@@ -96,49 +96,56 @@ class GFRecurly_Subscribe{
 
 				try {
 
-					$subscription = $this->gfrecurlyapi->create_subscription( $account_code, $recurly_plan_code, 'USD' );
-					$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Subscription: '.print_r( $subscription, true ) );
+					$transaction = $this->gfrecurlyapi->create_transaction( $account_code, $payment_amount, 'USD', $payment_desc );
+					$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Transaction: '.print_r( $transaction, true ) );
 
 					return array(
-						'is_success' => true,
-						'error_message' => '',
-						'subscription_id' => $subscription->plan_code,
-						'amount' => $payment_amount,
-						'recurly_subscription' => $subscription
+						'is_authorized' => true,
+						'transaction_id' => $transaction->uuid,
+						'captured_payment' => array(
+							'is_success' => true,
+							'error_message' => '',
+							'transaction_id' => $transaction->uuid,
+							'amount' => $payment_amount,
+							'payment_method' => $this->gfpaymentaddon->slug,
+							'recurly_transaction' => $transaction
+						),
 					);
 				} catch (Exception $e) {
 
 					return array(
-						'is_success' => false,
+						'is_authorized' => false,
 						'error_message' => $e->getMessage(),
-						'subscription_id' => '',
-						'amount' => $payment_amount,
+						'captured_payment' => array(
+							'is_success' => false,
+							'error_message' => $e->getMessage(),
+							'amount' => $payment_amount,
+							'payment_method' => $this->gfpaymentaddon->slug,
+						),
 					);
 				}
 			} else {
 				return array(
-					'is_success' => false,
-					'error_message' => 'Could not create account',
-					'subscription_id' => '',
-					'amount' => 0,
+					'is_authorized' => false,
+					'captured_payment' => array(
+						'is_success' => false,
+						'error_message' => 'Could not create account',
+						'amount' => 0,
+						'payment_method' => $this->gfpaymentaddon->slug,
+					),
 				);
 			}
 		} catch (Exception $e) {
 
 			return array(
-				'is_success' => false,
+				'is_authorized' => false,
 				'error_message' => $e->getMessage(),
-				'subscription_id' => '',
-				'amount' => 0,
+				'captured_payment' => array(
+					'is_success' => false,
+					'error_message' => $e->getMessage(),
+					'payment_method' => $this->gfpaymentaddon->slug,
+				),
 			);
 		}
-
-		$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Account doesn't exist" );
-		return array(
-			'is_success' => false,
-			'error_message' => 'Could not create subscription and account',
-			'subscription_id' => '',
-			'amount' => 0,
-		);
 	}
 }

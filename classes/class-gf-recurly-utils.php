@@ -15,6 +15,19 @@ class GFRecurly_Utils{
 	public function __construct() {
 	}
 
+	public static function random_string( $length = 10 ) {
+
+		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$charactersLength = strlen( $characters );
+		$randomString = '';
+
+		for ( $i = 0; $i < $length; $i++ ) {
+			$randomString .= $characters[ rand( 0, $charactersLength - 1 ) ];
+		}
+
+		return $randomString;
+	}
+
 	public static function add_note( $entry_id, $note, $note_type = null ) {
 
 		$user_id   = 0;
@@ -23,9 +36,14 @@ class GFRecurly_Utils{
 		GFFormsModel::add_note( $entry_id, $user_id, $user_name, $note, $note_type );
 	}
 
-	public static function cents_to_dollars( $cents = 0 ) {
+	public static function cents_to_dollars( $cents = 0, $decimals = 0 ) {
 
-		return number_format( ( $cents / 100 ), 2, '.', ' ' );
+		return number_format( ( $cents / 100 ), $decimals, '.', '' );
+	}
+
+	public static function dollars_to_cents( $dollars = 0, $decimals = 0 ) {
+
+		return number_format( ( $dollars * 100 ), $decimals, '.', '' );
 	}
 
 	public static function log_debug( $message ) {
@@ -34,7 +52,7 @@ class GFRecurly_Utils{
 
 			GFLogging::include_logger();
 
-			GFLogging::log_message( 'gravity-forms-recurly', $message, KLogger::DEBUG );
+			GFLogging::log_message( 'gravityforms-recurly', $message, KLogger::DEBUG );
 
 		}
 	}
@@ -68,7 +86,7 @@ class GFRecurly_Utils{
 		$subscription = GFRecurly_API_Utils::recurly_subscription_object_to_array( $subscription );
 
 		$transaction_id = rgar( $subscription, 'plan_code' );
-		$transaction_amount = GFRecurly_Utils::cents_to_dollars( rgar( $subscription, 'unit_amount_in_cents' ) );
+		$transaction_amount = GFRecurly_Utils::cents_to_dollars( rgar( $subscription, 'unit_amount_in_cents' ), 2 );
 		$transaction_currency = rgar( $subscription, 'currency' );
 		$entry_id = rgar( $entry, 'id' );
 
@@ -85,6 +103,37 @@ class GFRecurly_Utils{
 			$transaction_amount,
 			$transaction_currency,
 			$subscription
+		);
+
+		if ( $gf_recurly_id ) {
+
+			/* Link Entry with the DB table unique ID */
+			gform_update_meta( $entry_id, 'gf_recurly_entry', $gf_recurly_id );
+		}
+	}
+
+	public static function add_new_single_payment_data( $transaction, $entry ) {
+
+		$transaction = GFRecurly_API_Utils::recurly_transaction_object_to_array( $transaction );
+
+		$transaction_id = rgar( $transaction, 'uuid' );
+		$transaction_amount = GFRecurly_Utils::cents_to_dollars( rgar( $transaction, 'amount_in_cents' ), 2 );
+		$transaction_currency = rgar( $transaction, 'currency' );
+		$entry_id = rgar( $entry, 'id' );
+
+		GFRecurly_Utils::log_debug( "Gravity Forms + Recurly: Adding new transaction data: entry, {$entry_id}, false, single_payment, {$transaction_id}, paid, {$transaction_amount}, {$transaction_currency}, ".print_r( $transaction, true ) );
+
+		/* Insert into GF Recurly DB table */
+		$gf_recurly_id = GFRecurly_Data_IO::insert_transaction(
+			'entry',
+			$entry_id,
+			false,
+			'single_payment',
+			$transaction_id,
+			'paid',
+			$transaction_amount,
+			$transaction_currency,
+			$transaction
 		);
 
 		if ( $gf_recurly_id ) {
@@ -124,6 +173,7 @@ class GFRecurly_Utils{
 	private static function create_user( $entry, $form, $recurly_data ) {
 
 		$account_array = rgar( $recurly_data, 'account' );
+		$entry_id = rgar( $entry, 'id' );
 
 		$email = rgar( $account_array, 'email' );
 		$first_name = rgar( $account_array, 'first_name' );
@@ -154,9 +204,11 @@ class GFRecurly_Utils{
 
 		} else {
 
-			RGFormsModel::update_lead_property( $entry['id'], 'created_by', $user_id );
+			RGFormsModel::update_lead_property( $entry_id, 'created_by', $user_id );
 
-			GFRecurly_Data_IO::update_transaction( $entry['id'], 'user_id', $user_id );
+			GFRecurly_Data_IO::update_transaction( $entry_id, array(
+				'user_id' => $user_id,
+			) );
 
 		}
 	}
@@ -191,15 +243,24 @@ class GFRecurly_Utils{
 		return $found_any;
 	}
 
-	public static function save_recurly_info_wp_user( $user_id, $entry_id, $recurly_subscription ) {
+	public static function save_recurly_info_wp_user( $user_id, $entry_id, $transaction_type = 'single_payment', $recurly_object, $last_four = '' ) {
 
-		GFRecurly_Utils::save_recurly_account_code( $user_id, rgars( $recurly_subscription, 'account/account_code' ) );
-		GFRecurly_Utils::maybe_save_recurly_account_has_billing_info( $user_id, rgar( $recurly_subscription, 'account' ) );
-		GFRecurly_Utils::maybe_save_recurly_account_currency( $user_id, rgar( $recurly_subscription, 'currency' ) );
-		GFRecurly_Utils::maybe_save_recurly_subscription( $user_id, $recurly_subscription );
+		GFRecurly_Utils::save_recurly_account_code( $user_id, rgars( $recurly_object, 'account/account_code' ) );
+		GFRecurly_Utils::maybe_save_recurly_account_has_billing_info( $user_id, rgar( $recurly_object, 'account' ), $last_four );
+		GFRecurly_Utils::maybe_save_recurly_account_currency( $user_id, rgar( $recurly_object, 'currency' ) );
+
+		switch ( $transaction_type ) {
+			case 'single_payment':
+				//Silly to record individual transaction ids to user? Would also need to do the same for subscription transaction ids -- Any benefit?
+				//GFRecurly_Utils::maybe_save_recurly_transaction( $user_id, $recurly_object );
+			case 'subscription_payment':
+				GFRecurly_Utils::maybe_save_recurly_subscription( $user_id, $recurly_object );
+			break;
+		}
+
 		gform_update_meta( $entry_id, 'gfrecurly_user_id', $user_id );
 
-		do_action( 'gf_recurly_gform_user_registered_save_recurly_info_to_wp_user', $user_id, $entry_id, $recurly_subscription );
+		do_action( 'gf_recurly_gform_user_registered_save_recurly_info_to_wp_user', $user_id, $entry_id, $recurly_object );
 	}
 
 	public static function save_recurly_account_code( $user_id, $account_code ) {
@@ -207,10 +268,13 @@ class GFRecurly_Utils{
 		update_user_meta( $user_id, 'recurly_account_code', $account_code );
 	}
 
-	public static function maybe_save_recurly_account_has_billing_info( $user_id, $account ) {
+	public static function maybe_save_recurly_account_has_billing_info( $user_id, $account, $last_four = '' ) {
 
 		$has_billing_info = rgar( $account, 'billing_info' ) ? true : false;
-		update_user_meta( $user_id, 'recurly_account_has_billing_info', $has_billing_info );
+		update_user_meta( $user_id, 'recurly_account_has_billing_info', array(
+			'has_billing_info' => $has_billing_info,
+			'last_four' => $last_four
+		) );
 	}
 
 	public static function maybe_save_recurly_account_currency( $user_id, $currency = 'USD' ) {
@@ -218,11 +282,11 @@ class GFRecurly_Utils{
 		update_user_meta( $user_id, 'recurly_account_currency', $currency );
 	}
 
-	public static function maybe_save_recurly_subscription( $user_id, $sub = array() ) {
+	public static function maybe_save_recurly_subscription( $user_id, $sub = array(), $sub_state = 'active' ) {
 
 		$acc = rgar( $sub, 'account' );
 
-		if ( 'active' === rgar( $acc, 'state' ) ) {
+		if ( $sub_state === rgar( $acc, 'state' ) ) {
 
 			$transaction = rgar( $sub, 'plan_code' );
 			if ( ! in_array( $transaction, GFRecurly_Utils::get_active_recurly_subscriptions( $user_id ) ) ) {
@@ -244,15 +308,20 @@ class GFRecurly_Utils{
 		update_user_meta( $user_id, 'recurly_account_transactions', $existing_transactions );
 	}
 
-	public static function add_customer_metadata( $user_id, $entry_id, $recurly_subscription ) {
+	public static function add_customer_metadata( $user_id, $entry_id, $recurly_object ) {
 
-		$recurly_subscription['user_id'] = $user_id;
-		$recurly_subscription['entry_id'] = $entry_id;
+		$recurly_object['user_id'] = $user_id;
+		$recurly_object['entry_id'] = $entry_id;
 
-		$recurly_subscription = apply_filters( 'gf_recurly_gform_user_registered_add_customer_metadata', $recurly_subscription, $user_id, $entry_id );
+		$recurly_object = apply_filters( 'gf_recurly_gform_user_registered_add_customer_metadata', $recurly_object, $user_id, $entry_id );
 
-		GFRecurly_Data_IO::update_transaction( $entry_id, 'data', $recurly_subscription );
+		GFRecurly_Utils::log_debug( "Updating DB with 'data' : " . print_r( $recurly_object, true ) . " and 'user_id' : " . print_r( (int) $user_id, true ) . '.' );
 
-		do_action( 'gf_recurly_gform_user_registered_add_customer_metadata', $user_id, $entry_id, $recurly_subscription );
+		GFRecurly_Data_IO::update_transaction( $entry_id, array(
+			'data' => $recurly_object,
+			'user_id' => (int) $user_id,
+		) );
+
+		do_action( 'gf_recurly_gform_user_registered_add_customer_metadata', $user_id, $entry_id, $recurly_object );
 	}
 }

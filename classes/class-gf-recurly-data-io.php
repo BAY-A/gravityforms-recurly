@@ -34,8 +34,8 @@ class GFRecurly_Data_IO {
 		);
 	}
 
-	public static function update_transaction( $entry_id, $property_name, $property_value ) {
-		return GFRecurly_Data::update_transaction( $entry_id, $property_name, $property_value );
+	public static function update_transaction( $entry_id, $property_arr ) {
+		return GFRecurly_Data::update_transaction( $entry_id, $property_arr );
 	}
 
 	public static function get_all_recurly_data_for_user( $user_id = -1 ) {

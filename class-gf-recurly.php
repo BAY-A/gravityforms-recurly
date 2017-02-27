@@ -47,6 +47,10 @@ if ( method_exists( 'GFForms', 'include_payment_addon_framework' ) ) {
 			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-init.php';
 			GFRecurly_Init::instance( $this );
 
+			add_action( 'gform_post_subscription_started', array( $this, 'gform_post_subscription_started' ), 10, 2 );
+			add_action( 'gform_user_registered', array( $this, 'gform_user_registered' ), 10, 4 );
+			add_action( 'gform_post_payment_completed', array( $this, 'gform_post_payment_completed' ), 10, 2 );
+
 			parent::init();
 		}
 
@@ -82,10 +86,39 @@ if ( method_exists( 'GFForms', 'include_payment_addon_framework' ) ) {
 			return GFRecurly_Subscribe::instance( $this )->subscribe( $feed, $submission_data, $form, $entry );
 		}
 
+		//GFPaymentAddOn Authorize
+		public function authorize( $feed, $submission_data, $form, $entry ) {
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-authorize.php';
+			return GFRecurly_Authorize::instance( $this )->authorize( $feed, $submission_data, $form, $entry );
+		}
+
+		//GFPaymentAddOn Process Feed
 		public function process_feed( $feed, $entry, $form ) {
 
 			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-process-feed.php';
 			return GFRecurly_Process_Feed::instance( $this )->process_feed( $feed, $entry, $form );
+		}
+
+		//Post Subscription started
+		public function gform_post_subscription_started( $entry, $subscription ) {
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-gform-post-subscription-started.php';
+			return GFRecurly_Post_Subscription_Started::instance( $this )->gform_post_subscription_started( $entry, $subscription );
+		}
+
+		//User Registered
+		public function gform_user_registered( $user_id, $feed, $entry, $password ) {
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-gform-user-registered.php';
+			return GFRecurly_User_Registered::instance( $this )->gform_user_registered( $user_id, $feed, $entry, $password );
+		}
+
+		//Post Payment Completed
+		public function gform_post_payment_completed( $entry, $action ) {
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-gform-post-payment-completed.php';
+			return GFRecurly_Post_Payment_Completed::instance( $this )->gform_post_payment_completed( $entry, $action );
 		}
 
 		//JS Response

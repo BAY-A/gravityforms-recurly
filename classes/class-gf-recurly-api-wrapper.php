@@ -61,7 +61,49 @@ class GFRecurly_API_Wrapper {
 		} catch ( Exception $e ) {
 
 			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Could not create subscription: {$e->getMessage()}" );
+			throw new Exception( $e->getMessage() );
+		}
+	}
+
+	/* Create Transaction */
+	public function create_transaction( $account_code, $payment_amount = 0, $currency = 'USD', $desc = '' ) {
+
+		$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: 'create_transaction' function. Params: {$account_code}, {$payment_amount}, {$currency}" );
+		if ( empty( $account_code ) || empty( $payment_amount ) ) {
+
 			return false;
+		}
+
+		$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Account code and Payment Amount exist" );
+
+		$account = $this->maybe_get_account( $account_code );
+
+		if ( ! $account || ! is_object( $account->billing_info ) ) {
+
+			return false;
+		}
+
+		$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Account exists: ".print_r( $account, true ) );
+
+		try {
+			$payment_amount_in_cents = GFRecurly_Utils::dollars_to_cents( $payment_amount );
+			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Account payment_amount_in_cents: ".print_r( $payment_amount_in_cents, true ) );
+
+			$transaction = new Recurly_Transaction( null, $this->client );
+			$transaction->amount_in_cents = $payment_amount_in_cents;
+			$transaction->currency = $currency;
+			$transaction->description = $desc;
+
+			$transaction->account = $account;
+			$transaction->create();
+
+			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Created charge" );
+			return $transaction;
+
+		} catch ( Exception $e ) {
+
+			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Could not create charge: {$e->getMessage()}" );
+			throw new Exception( $e->getMessage() );
 		}
 	}
 
@@ -121,7 +163,7 @@ class GFRecurly_API_Wrapper {
 		} catch ( Exception $e ) {
 
 			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Could not create account: {$e->getMessage()}" );
-			return false;
+			throw new Exception( $e->getMessage() );
 		}
 	}
 
@@ -162,7 +204,7 @@ class GFRecurly_API_Wrapper {
 		} catch ( Exception $e ) {
 
 			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Could not update account billing information: {$e->getMessage()}" );
-			return false;
+			throw new Exception( $e->getMessage() );
 		}
 	}
 
@@ -218,7 +260,7 @@ class GFRecurly_API_Wrapper {
 		} catch ( Exception $e ) {
 
 			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Could not create acconut billing information: {$e->getMessage()}" );
-			return false;
+			throw new Exception( $e->getMessage() );
 		}
 	}
 

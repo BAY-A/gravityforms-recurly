@@ -69,7 +69,7 @@ class GFRecurly_Feed_Settings_Fields extends GFPaymentAddOn{
 						'name'     => 'subscriptionPlan',
 						'label'    => esc_html__( 'Subscription Plan Name', 'gravityforms-recurly' ),
 						'type'     => 'select',
-						'choices'  => $this->subscription_plan_choices(),
+						'choices'  => $this->text_value_choices(),
 						'required' => true,
 						'tooltip'  => '<h6>' . esc_html__( 'Subscription Plan Name', 'gravityforms-recurly' ) . '</h6>' . esc_html__( "Select which field determines the Recurly subscription plan name.", 'gravityforms-recurly' ),
 					),
@@ -90,6 +90,14 @@ class GFRecurly_Feed_Settings_Fields extends GFPaymentAddOn{
 						'required'      => true,
 						'default_value' => 'form_total',
 						'tooltip'       => '<h6>' . esc_html__( 'Payment Amount', 'gravityforms-recurly' ) . '</h6>' . esc_html__( "Select which field determines the payment amount, or select 'Form Total' to use the total of all pricing fields as the payment amount.", 'gravityforms-recurly' ),
+					),
+					array(
+						'name'          => 'paymentDesc',
+						'label'         => esc_html__( 'Payment Description', 'gravityforms-recurly' ),
+						'type'          => 'select',
+						'choices'       => $this->text_value_choices(),
+						'required'      => false,
+						'tooltip'       => '<h6>' . esc_html__( 'Payment Description', 'gravityforms-recurly' ) . '</h6>' . esc_html__( "Select which field determines the payment description, so that your customers can better understand the charge, and see it in their records.", 'gravityforms-recurly' ),
 					),
 				),
 			),
@@ -161,7 +169,7 @@ class GFRecurly_Feed_Settings_Fields extends GFPaymentAddOn{
 		return $core_feed_settings_fields;
 	}
 
-	public function subscription_plan_choices() {
+	public function text_value_choices() {
 		$form = $this->get_current_form();
 		$string_choices = $this->get_possible_string_return_value_choices( $form );
 

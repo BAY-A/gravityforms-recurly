@@ -58,7 +58,12 @@ class GFRecurly_Process_Feed{
 
 	public function standard_processing( $feed, $entry, $form ) {
 
+		$entry_id = rgar( $entry, 'id' );
+
 		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Feeds processed: ' . print_r( $feed, true ) . print_r( $entry, true ) . print_r( $form, true ) );
+
+		gform_update_meta( $entry_id, 'transactionType', rgars( $feed, 'meta/transactionType' ) );
+
 		return $entry;
 	}
 }

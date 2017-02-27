@@ -28,16 +28,34 @@ class GFRecurly_User_Registered{
 		//Check whether it was successful (via Recurly table entry), and only proceed if so
 		$entry_id = rgar( $entry, 'id' );
 		$form_id = rgar( $entry, 'form_id' );
+		$form = GFAPI::get_form( $form_id );
+
+		$submission_data = $this->gfpaymentaddon->get_submission_data( $feed, $form, $entry );
+
+		$card_number = rgar( $submission_data, 'card_number' );
+		$last_four = $card_number ? substr( $card_number, -4 ) : '';
+
+		$transaction_type = gform_get_meta( $entry_id, 'transactionType' );
+		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: transaction_type ' . print_r( $transaction_type, true ) );
 
 		$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: form entry id: {$entry_id}" );
 		$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: form id: {$form_id}" );
 
-		$subscription = GFRecurly_Data_IO::get_transaction_by_entry_id( $entry_id );
-		$subscription = rgar( $subscription, 'data' );
-		
-		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Got subscription object: ' . print_r( $subscription, true ) );
+		$transaction_type = '';
 
-		if ( $subscription ) {
+		switch ( $transaction_type ) {
+			case 'subscription':
+				$transaction_type = 'subscription_payment';
+			case 'product':
+				$transaction_type = 'single_payment';
+			break;
+		}
+
+		$recurly_object = GFRecurly_Data_IO::get_transaction_by_entry_id( $entry_id );
+		$recurly_object = rgar( $recurly_object, 'data' );
+		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Got recurly object: ' . print_r( $recurly_object, true ) );
+
+		if ( $recurly_object ) {
 
 			$auto_login_users = gform_get_meta( $entry_id, 'autoLoginNewUsers' ) ?: false;
 			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: auto_login_users: {$auto_login_users}" );
@@ -53,10 +71,10 @@ class GFRecurly_User_Registered{
 					$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Active feeds found, continuing' );
 
 					//Run 'save_recurly_info_to_wp_user'
-					GFRecurly_Utils::save_recurly_info_wp_user( $user_id, $entry_id, $subscription );
+					GFRecurly_Utils::save_recurly_info_wp_user( $user_id, $entry_id, $transaction_type, $recurly_object, $last_four );
 
 					//Then run 'add_customer_metadata'
-					GFRecurly_Utils::add_customer_metadata( $user_id, $entry_id, $subscription );
+					GFRecurly_Utils::add_customer_metadata( $user_id, $entry_id, $recurly_object );
 
 					//IF the user is not logged in
 					if ( ! is_user_logged_in() ) {

@@ -14,6 +14,53 @@ class GFRecurly_API_Utils{
 
 	public function __construct() {}
 
+	public static function recurly_transaction_object_to_array( Recurly_Transaction $transaction ){
+
+		$transaction_array = array();
+
+		if( $transaction->account && is_object( $transaction->account ) ){
+
+			$transaction->account = $transaction->account->get();
+			$transaction_array['account'] = GFRecurly_API_Utils::recurly_account_object_to_array( $transaction->account );
+		}
+
+		if( $transaction->subscription && is_object( $transaction->subscription ) ){
+
+			$transaction->subscription = $transaction->subscription->get();
+			$transaction_array['subscription'] = GFRecurly_API_Utils::recurly_subscription_object_to_array( $transaction->subscription );
+		}
+
+		$transaction_array['gateway_error_code'] = $transaction->gateway_error_code;
+		$transaction_array['customer_message'] = $transaction->customer_message;
+		$transaction_array['merchant_message'] = $transaction->merchant_message;
+		$transaction_array['error_category'] = $transaction->error_category;
+		$transaction_array['error_code'] = $transaction->error_code;
+
+		$transaction_array['updated_at'] = $transaction->updated_at;
+		$transaction_array['created_at'] = $transaction->created_at;
+		$transaction_array['avs_result_postal'] = $transaction->avs_result_postal;
+		$transaction_array['avs_result_street'] = $transaction->avs_result_street;
+		$transaction_array['avs_result'] = $transaction->avs_result;
+		$transaction_array['cvv_result'] = $transaction->cvv_result;
+		$transaction_array['ip_address'] = $transaction->ip_address;
+		$transaction_array['refundable'] = $transaction->refundable;
+		$transaction_array['voidable'] = $transaction->voidable;
+		$transaction_array['test'] = $transaction->test;
+		$transaction_array['recurring'] = $transaction->recurring;
+		$transaction_array['source'] = $transaction->source;
+		$transaction_array['reference'] = $transaction->reference;
+		$transaction_array['payment_method'] = $transaction->payment_method;
+		$transaction_array['status'] = $transaction->status;
+		$transaction_array['currency'] = $transaction->currency;
+		$transaction_array['tax_in_cents'] = $transaction->tax_in_cents;
+		$transaction_array['amount_in_cents'] = $transaction->amount_in_cents;
+		$transaction_array['action'] = $transaction->action;
+		$transaction_array['original_transaction'] = $transaction->original_transaction;
+		$transaction_array['uuid'] = $transaction->uuid;
+
+		return $transaction_array;
+	}
+
 	public static function recurly_subscription_object_to_array( Recurly_Subscription $subscription ){
 
 		$subscription_array = array();
@@ -97,12 +144,14 @@ class GFRecurly_API_Utils{
 
 		$billing_info_array = array();
 
+		$last_four = $billing_info->number ? substr( $billing_info->number, -4 ) : '';
+
 		$billing_info_array['account_code'] = $billing_info->account_code ?: '';
 		$billing_info_array['token_id'] = $billing_info->token_id ?: '';
 		$billing_info_array['currency'] = $billing_info->currency ?: '';
 		$billing_info_array['first_name'] = $billing_info->first_name ?: '';
 		$billing_info_array['last_name'] = $billing_info->last_name ?: '';
-		$billing_info_array['number'] = $billing_info->number ?: '';
+		$billing_info_array['number'] = $last_four;
 		$billing_info_array['month'] = $billing_info->month ?: '';
 		$billing_info_array['year'] = $billing_info->year ?: '';
 		$billing_info_array['address1'] = $billing_info->address1 ?: '';
