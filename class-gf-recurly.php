@@ -50,6 +50,8 @@ if ( method_exists( 'GFForms', 'include_payment_addon_framework' ) ) {
 			add_action( 'gform_post_subscription_started', array( $this, 'gform_post_subscription_started' ), 10, 2 );
 			add_action( 'gform_user_registered', array( $this, 'gform_user_registered' ), 10, 4 );
 			add_action( 'gform_post_payment_completed', array( $this, 'gform_post_payment_completed' ), 10, 2 );
+			add_filter( 'gform_is_delayed_pre_process_feed', array( $this, 'gform_is_delayed_pre_process_feed' ), 10, 4 );
+			add_action( 'gform_pre_process', array( $this, 'gform_pre_process' ) );
 
 			parent::init();
 		}
@@ -119,6 +121,20 @@ if ( method_exists( 'GFForms', 'include_payment_addon_framework' ) ) {
 
 			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-gform-post-payment-completed.php';
 			return GFRecurly_Post_Payment_Completed::instance( $this )->gform_post_payment_completed( $entry, $action );
+		}
+
+		//Is Delayed Pre Process Feed?
+		public function gform_is_delayed_pre_process_feed( $is_delayed, $form, $entry, $slug ) {
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-gform-is-delayed-pre-process-feed.php';
+			return GFRecurly_Is_Delayed_Pre_Process_Feed::instance( $this )->gform_is_delayed_pre_process_feed( $is_delayed, $form, $entry, $slug );
+		}
+
+		//Pre Process
+		public function gform_pre_process( $form ) {
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-gform-pre-process.php';
+			return GFRecurly_Pre_Process::instance( $this )->gform_pre_process( $form );
 		}
 
 		//JS Response

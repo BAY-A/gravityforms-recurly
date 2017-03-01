@@ -146,6 +146,23 @@ class GFRecurly_Feed_Settings_Fields extends GFPaymentAddOn{
 						'default_value' => 0,
 						'tooltip'   => '<h6>' . esc_html__( 'Automatically log-in new users?', 'gravityforms-recurly' ) . '</h6>' . esc_html__( 'When a new user is created after paying via Recurly, should they be automatically logged-in? Great for upsells, etc..', 'gravityforms-recurly' )
 					),
+					array(
+						'name'      => 'preventUserRegistrationIfLoggedIn',
+						'label'     => esc_html__( 'Prevent User Registration if logged in?', 'gravityforms-recurly' ),
+						'type'      => 'select',
+						'choices' => array(
+						 	array(
+								'label' => esc_html__( 'Yes', 'gravityforms-recurly' ),
+								'value' => 1
+							),
+							array(
+								'label' => esc_html__( 'No', 'gravityforms-recurly' ),
+								'value' => 0
+							),
+						),
+						'default_value' => 0,
+						'tooltip'   => '<h6>' . esc_html__( 'Prevent the User Registration add-on from running if the user using the form is logged in?', 'gravityforms-recurly' ) . '</h6>' . esc_html__( 'If enabled, the User Registration feed(s) for this form will only work if the user is not logged in to the site.', 'gravityforms-recurly' )
+					),
 				),
 			);
 		}

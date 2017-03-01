@@ -243,6 +243,26 @@ class GFRecurly_Utils{
 		return $found_any;
 	}
 
+	public static function findFeedMetaKeyAndValue( $active_feeds = array(), $search_key = '', $search_value = '' ) {
+
+		$found_any = false;
+		if ( ! empty( $active_feeds ) ) {
+
+			foreach ( $active_feeds as $a_feed ) {
+
+				$a_feed_meta = rgar( $a_feed, 'meta' );
+				$a_feed_keyval = rgar( $a_feed_meta, $search_key );
+				if ( $a_feed_keyval && $search_value == $a_feed_keyval ) {
+
+					$found_any = true;
+					break;
+				}
+			}
+		}
+
+		return $found_any;
+	}
+
 	public static function save_recurly_info_wp_user( $user_id, $entry_id, $transaction_type = 'single_payment', $recurly_object, $last_four = '' ) {
 
 		GFRecurly_Utils::save_recurly_account_code( $user_id, rgars( $recurly_object, 'account/account_code' ) );
@@ -273,7 +293,7 @@ class GFRecurly_Utils{
 		$has_billing_info = rgar( $account, 'billing_info' ) ? true : false;
 		update_user_meta( $user_id, 'recurly_account_has_billing_info', array(
 			'has_billing_info' => $has_billing_info,
-			'last_four' => $last_four
+			'last_four' => $last_four,
 		) );
 	}
 
