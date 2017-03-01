@@ -137,6 +137,46 @@ if ( method_exists( 'GFForms', 'include_payment_addon_framework' ) ) {
 			return GFRecurly_Pre_Process::instance( $this )->gform_pre_process( $form );
 		}
 
+		//Get Column Value Transaction Type (Child Function)
+		public function get_column_value_transactionType( $feed ) {
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-get-column-value-transaction-type.php';
+			return GFRecurly_Get_Column_Value_TransactionType::instance( $this )->get_column_value_transactionType( $feed );
+		}
+
+		//Get Column Value Transaction Type Parent Function
+		public function get_column_value_transactionTypeParent( $feed ) {
+
+			return parent::get_column_value_transactionType( $feed );
+		}
+
+		//Validation (Child Function)
+		public function validation( $validation_result ){
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-validation.php';
+			return GFRecurly_Validation::instance( $this )->validation( $validation_result );
+		}
+
+		//Validation Parent
+		public function validationParent( $validation_result ){
+
+			return parent::validation( $validation_result );
+		}
+
+		//Update Subscription
+		public function update_subscription( $feed, $submission_data, $form, $entry ){
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-update-subscription.php';
+			return GFRecurly_Update_Subscription::instance( $this )->update_subscription( $feed, $submission_data, $form, $entry );
+		}
+
+		//Update Billing Information
+		public function update_billing_information( $feed, $submission_data, $form, $entry ){
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-update-billing-information.php';
+			return GFRecurly_Update_Billing_Information::instance( $this )->update_billing_information( $feed, $submission_data, $form, $entry );
+		}
+
 		//JS Response
 		public function get_recurly_js_response() {
 
