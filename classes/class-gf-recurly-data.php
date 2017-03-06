@@ -121,7 +121,7 @@ class GFRecurly_Data {
 		$table_name  = GFRecurly_Data::get_recurly_table_name();
 		$transaction = null;
 
-		if ( 'entry' == $type || 'user_id' == $type || 'transaction_id' == $type ) {
+		if ( 'id' === $type || 'entry' === $type || 'user_id' === $type || 'transaction_id' === $type ) {
 
 			switch ( $type ) {
 

@@ -27,6 +27,74 @@ class GFRecurly_API_Wrapper {
 		$this->client::$apiKey = rgar( $this->gfpaymentaddon->get_plugin_settings(), 'gf_recurly_api_key' );
 	}
 
+	/* Update Billing Information */
+	public function update_billing_information(
+		$account_code = -1,
+		$first_name = '',
+		$last_name = '',
+		$email = '',
+		$address_one = '',
+		$address_two = '',
+		$address_city = '',
+		$address_state = '',
+		$address_zip = '',
+		$address_country = '',
+		$ip_address = '',
+		$cc_num = '',
+		$cc_verification = '',
+		$cc_month = '',
+		$cc_year = ''
+	) {
+
+		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: `update_billing_information` function' );
+
+		try {
+
+			$account = new Recurly_Account( $account_code, $this->client );
+			$account->email = $email;
+			$account->first_name = $first_name;
+			$account->last_name = $last_name;
+
+			$acc_address = new Recurly_Address( null, $this->client );
+			$acc_address->address1 = $address_one;
+			$acc_address->address2 = $address_two;
+			$acc_address->city = $address_city;
+			$acc_address->state = $address_state;
+			$acc_address->zip = $address_zip;
+			$acc_address->country = $address_country;
+
+			$account->address = $acc_address;
+
+			$account->billing_info = $this->create_billinginfo(
+				$account_code,
+				$first_name,
+				$last_name,
+				$cc_num,
+				$cc_verification,
+				$cc_month,
+				$cc_year,
+				$ip_address,
+				$address_one,
+				$address_two,
+				$address_city,
+				$address_state,
+				$address_country,
+				$address_zip,
+				false
+			);
+
+			$account->update();
+
+			$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Account and Billing Information updated.' );
+			return $account;
+			
+		} catch ( Exception $e ) {
+
+			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Could not update billing information: {$e->getMessage()}" );
+			throw new Exception( $e->getMessage() );
+		}
+	}
+
 	/* Create Subscription */
 	public function create_subscription( $account_code, $plan_code = '', $currency = 'USD' ) {
 
@@ -36,7 +104,7 @@ class GFRecurly_API_Wrapper {
 			return false;
 		}
 
-		$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Account code and Plan code exist" );
+		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Account code and Plan code exist' );
 
 		$account = $this->maybe_get_account( $account_code );
 
@@ -45,7 +113,7 @@ class GFRecurly_API_Wrapper {
 			return false;
 		}
 
-		$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Account exists: ".print_r( $account, true ) );
+		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Account exists: '.print_r( $account, true ) );
 
 		try {
 			$subscription = new Recurly_Subscription( null, $this->client );
@@ -55,7 +123,7 @@ class GFRecurly_API_Wrapper {
 			$subscription->account = $account;
 			$subscription->create();
 
-			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Created subscription" );
+			$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Created subscription' );
 			return $subscription;
 
 		} catch ( Exception $e ) {
@@ -74,7 +142,7 @@ class GFRecurly_API_Wrapper {
 			return false;
 		}
 
-		$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Account code and Payment Amount exist" );
+		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Account code and Payment Amount exist' );
 
 		$account = $this->maybe_get_account( $account_code );
 
@@ -83,11 +151,11 @@ class GFRecurly_API_Wrapper {
 			return false;
 		}
 
-		$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Account exists: ".print_r( $account, true ) );
+		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Account exists: '.print_r( $account, true ) );
 
 		try {
 			$payment_amount_in_cents = GFRecurly_Utils::dollars_to_cents( $payment_amount );
-			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Account payment_amount_in_cents: ".print_r( $payment_amount_in_cents, true ) );
+			$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Account payment_amount_in_cents: '.print_r( $payment_amount_in_cents, true ) );
 
 			$transaction = new Recurly_Transaction( null, $this->client );
 			$transaction->amount_in_cents = $payment_amount_in_cents;
@@ -97,7 +165,7 @@ class GFRecurly_API_Wrapper {
 			$transaction->account = $account;
 			$transaction->create();
 
-			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Created charge" );
+			$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Created charge' );
 			return $transaction;
 
 		} catch ( Exception $e ) {
@@ -137,73 +205,32 @@ class GFRecurly_API_Wrapper {
 				$account->address = $acc_address;
 
 				$account->billing_info = $this->create_billinginfo(
-																	$account_code,
-																	$billing_info['first_name'],
-																	$billing_info['last_name'],
-																	$billing_info['number'],
-																	$billing_info['verification_value'],
-																	$billing_info['month'],
-																	$billing_info['year'],
-																	$billing_info['ip_address'],
-																	$billing_info['address_one'],
-																	$billing_info['address_two'],
-																	$billing_info['city'],
-																	$billing_info['state'],
-																	$billing_info['country'],
-																	$billing_info['zip'],
-																	false
-																);
+					$account_code,
+					$billing_info['first_name'],
+					$billing_info['last_name'],
+					$billing_info['number'],
+					$billing_info['verification_value'],
+					$billing_info['month'],
+					$billing_info['year'],
+					$billing_info['ip_address'],
+					$billing_info['address_one'],
+					$billing_info['address_two'],
+					$billing_info['city'],
+					$billing_info['state'],
+					$billing_info['country'],
+					$billing_info['zip'],
+					false
+				);
 			}
 
 			$account->create();
-			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Created account" );
+			$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Created account' );
 
 			return $account;
 
 		} catch ( Exception $e ) {
 
 			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Could not create account: {$e->getMessage()}" );
-			throw new Exception( $e->getMessage() );
-		}
-	}
-
-	/* Update Account Billing Information */
-	public function update_account_billing_information( $account_code, $first_name, $last_name, $number, $verification_value, $month, $year, $ip_address, $address_one, $address_two, $city, $state, $country, $zip ) {
-
-		if ( ! $this->maybe_get_account( $account_code ) || ! $billing_info || ! is_object( $billing_info ) ) {
-
-			return false;
-		}
-
-		try {
-
-			$account = new Recurly_Account( $account_code, $this->client );
-			$account->billing_info = $this->create_billinginfo(
-																$account_code,
-																$first_name,
-																$last_name,
-																$number,
-																$verification_value,
-																$month,
-																$year,
-																$ip_address,
-																$address_one,
-																$address_two,
-																$city,
-																$state,
-																$country,
-																$zip,
-																false
-															);
-
-			$account->update();
-
-			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Updated account billing information" );
-			return $account;
-
-		} catch ( Exception $e ) {
-
-			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Could not update account billing information: {$e->getMessage()}" );
 			throw new Exception( $e->getMessage() );
 		}
 	}
@@ -254,7 +281,7 @@ class GFRecurly_API_Wrapper {
 				$billing_info->create();
 			}
 
-			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Created account billing information" );
+			$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Created account billing information' );
 			return $billing_info;
 
 		} catch ( Exception $e ) {
@@ -273,7 +300,7 @@ class GFRecurly_API_Wrapper {
 
 		try {
 
-			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Getting account" );
+			$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Getting account' );
 			return Recurly_Account::get( $account_code, $this->client );
 
 		} catch ( Recurly_NotFoundError $e ) {
@@ -292,7 +319,7 @@ class GFRecurly_API_Wrapper {
 
 		try {
 
-			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Getting account billing info" );
+			$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Getting account billing info' );
 			return Recurly_BillingInfo::get( $account_code, $this->client );
 
 		} catch ( Recurly_NotFoundError $e ) {

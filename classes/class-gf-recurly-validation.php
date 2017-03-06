@@ -33,9 +33,10 @@ class GFRecurly_Validation {
 
 		$submission_data = $this->gfpaymentaddon->get_submission_data( $feed, $form, $entry );
 
-		$this->gfpaymentaddon->is_payment_gateway      = true;
-		$this->gfpaymentaddon->current_feed            = $this->gfpaymentaddon->_single_submission_feed = $feed;
-		$this->gfpaymentaddon->current_submission_data = $submission_data;
+		$this->gfpaymentaddon->isPaymentGateway( true );
+		$this->gfpaymentaddon->currentFeed( $feed );
+		$this->gfpaymentaddon->singleSubmissionFeed( $feed );
+		$this->gfpaymentaddon->currentSubmissionData( $submission_data );
 
 		$performed_authorization = false;
 		$feedType = $feed['meta']['transactionType'];
@@ -44,9 +45,9 @@ class GFRecurly_Validation {
 
 			$updatedBillingInfo = $this->gfpaymentaddon->update_billing_information( $feed, $submission_data, $form, $entry );
 
-			$this->authorization['is_authorized'] = rgar($updatedBillingInfo,'is_success');
-			$this->authorization['error_message'] = rgar( $updatedBillingInfo, 'error_message' );
-			$this->authorization['updated_subscription']  = $updatedBillingInfo;
+			$this->gfpaymentaddon->updateAuthorizationProperty( 'is_authorized', rgar( $updatedBillingInfo,'is_success' ) );
+			$this->gfpaymentaddon->updateAuthorizationProperty( 'error_message', rgar( $updatedBillingInfo,'error_message' ) );
+			$this->gfpaymentaddon->updateAuthorizationProperty( 'billing_information', rgar( $updatedBillingInfo,'billing_information' ) );
 
 			$performed_authorization = true;
 
@@ -54,19 +55,18 @@ class GFRecurly_Validation {
 
 			$updatedSubscription = $this->gfpaymentaddon->update_subscription( $feed, $submission_data, $form, $entry );
 
-			$this->authorization['is_authorized'] = rgar($updatedSubscription,'is_success');
-			$this->authorization['error_message'] = rgar( $updatedSubscription, 'error_message' );
-			$this->authorization['updated_subscription']  = $updatedSubscription;
+			$this->gfpaymentaddon->updateAuthorizationProperty( 'is_authorized', rgar( $updatedSubscription,'is_success' ) );
+			$this->gfpaymentaddon->updateAuthorizationProperty( 'error_message', rgar( $updatedSubscription,'error_message' ) );
 
 			$performed_authorization = true;
 		}
 
 		if ( $performed_authorization ) {
-			$this->gfpaymentaddon->log_debug( __METHOD__ . "(): Authorization result for form #{$form['id']} submission => " . print_r( $this->gfpaymentaddon->authorization, 1 ) );
+			$this->gfpaymentaddon->log_debug( __METHOD__ . "(): Authorization result for form #{$form['id']} submission => " . print_r( $this->gfpaymentaddon->getAuthorization(), 1 ) );
 		}
 
-		if ( $performed_authorization && ! rgar( $this->gfpaymentaddon->authorization, 'is_authorized' ) ) {
-			$validation_result = $this->gfpaymentaddon->get_validation_result( $validation_result, $this->gfpaymentaddon->authorization );
+		if ( $performed_authorization && ! rgar( $this->gfpaymentaddon->getAuthorization(), 'is_authorized' ) ) {
+			$validation_result = $this->gfpaymentaddon->get_validation_result( $validation_result, $this->gfpaymentaddon->getAuthorization() );
 
 			//Setting up current page to point to the credit card page since that will be the highlighted field
 			GFFormDisplay::set_current_page( $validation_result['form']['id'], $validation_result['credit_card_page'] );

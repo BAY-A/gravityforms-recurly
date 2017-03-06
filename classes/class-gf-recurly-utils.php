@@ -81,6 +81,42 @@ class GFRecurly_Utils{
 		return array_map( 'GFRecurly_Utils::objectToArray', (array) $object );
 	}
 
+	public static function does_user_have_a_recurly_account( $user_id ) {
+
+		return empty( GFRecurly_Utils::get_recurly_account_code( $user_id ) ) ? false : true;
+	}
+
+	public static function add_new_update_billing_data( $account, $entry ) {
+
+		$account = GFRecurly_API_Utils::recurly_account_object_to_array( $account );
+		$entry_id = rgar( $entry, 'id' );
+		$user_id = rgar( $entry, 'created_by' );
+
+		GFRecurly_Utils::log_debug( "Gravity Forms + Recurly: Adding new billing information data: entry, {$entry_id}, false, update_billing, false, active, false, false, ".print_r( $account, true ) );
+
+		/* Insert into GF Recurly DB table */
+		$gf_recurly_id = GFRecurly_Data_IO::insert_transaction(
+			'entry',
+			$entry_id,
+			$user_id,
+			'update_billing',
+			false,
+			'active',
+			false,
+			false,
+			$account
+		);
+
+		if ( $gf_recurly_id ) {
+
+			/* Link Entry with the DB table unique ID */
+			gform_update_meta( $entry_id, 'gf_recurly_entry', $gf_recurly_id );
+			return $gf_recurly_id;
+		}
+
+		return false;
+	}
+
 	public static function add_new_subscription_data( $subscription, $entry ) {
 
 		$subscription = GFRecurly_API_Utils::recurly_subscription_object_to_array( $subscription );
@@ -288,6 +324,11 @@ class GFRecurly_Utils{
 		update_user_meta( $user_id, 'recurly_account_code', $account_code );
 	}
 
+	public static function get_recurly_account_code( $user_id ) {
+
+		return get_user_meta( $user_id, 'recurly_account_code', true ) ?: false;
+	}
+
 	public static function maybe_save_recurly_account_has_billing_info( $user_id, $account, $last_four = '' ) {
 
 		$has_billing_info = rgar( $account, 'billing_info' ) ? true : false;
@@ -333,7 +374,7 @@ class GFRecurly_Utils{
 		$recurly_object['user_id'] = $user_id;
 		$recurly_object['entry_id'] = $entry_id;
 
-		$recurly_object = apply_filters( 'gf_recurly_gform_user_registered_add_customer_metadata', $recurly_object, $user_id, $entry_id );
+		$recurly_object = apply_filters( 'gf_recurly_add_customer_metadata', $recurly_object, $user_id, $entry_id );
 
 		GFRecurly_Utils::log_debug( "Updating DB with 'data' : " . print_r( $recurly_object, true ) . " and 'user_id' : " . print_r( (int) $user_id, true ) . '.' );
 
@@ -342,6 +383,6 @@ class GFRecurly_Utils{
 			'user_id' => (int) $user_id,
 		) );
 
-		do_action( 'gf_recurly_gform_user_registered_add_customer_metadata', $user_id, $entry_id, $recurly_object );
+		do_action( 'gf_recurly_add_customer_metadata', $user_id, $entry_id, $recurly_object );
 	}
 }

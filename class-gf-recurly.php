@@ -50,8 +50,10 @@ if ( method_exists( 'GFForms', 'include_payment_addon_framework' ) ) {
 			add_action( 'gform_post_subscription_started', array( $this, 'gform_post_subscription_started' ), 10, 2 );
 			add_action( 'gform_user_registered', array( $this, 'gform_user_registered' ), 10, 4 );
 			add_action( 'gform_post_payment_completed', array( $this, 'gform_post_payment_completed' ), 10, 2 );
+			add_action( 'gfrecurly_post_update_billing_completed', array( $this, 'gfrecurly_post_update_billing_completed' ), 10, 3 );
 			add_filter( 'gform_is_delayed_pre_process_feed', array( $this, 'gform_is_delayed_pre_process_feed' ), 10, 4 );
 			add_action( 'gform_pre_process', array( $this, 'gform_pre_process' ) );
+			add_filter( 'gform_entry_post_save', array( $this, 'gfrecurly_entry_post_save' ), 11, 2 );
 
 			parent::init();
 		}
@@ -123,6 +125,13 @@ if ( method_exists( 'GFForms', 'include_payment_addon_framework' ) ) {
 			return GFRecurly_Post_Payment_Completed::instance( $this )->gform_post_payment_completed( $entry, $action );
 		}
 
+		//Post Update Billing Completed
+		public function gfrecurly_post_update_billing_completed( $entry, $action, $feed ){
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-gform-post-update-billing-completed.php';
+			return GFRecurly_Post_Update_Billing_Completed::instance( $this )->gform_post_update_billing_completed( $entry, $action, $feed );
+		}
+
 		//Is Delayed Pre Process Feed?
 		public function gform_is_delayed_pre_process_feed( $is_delayed, $form, $entry, $slug ) {
 
@@ -151,30 +160,105 @@ if ( method_exists( 'GFForms', 'include_payment_addon_framework' ) ) {
 		}
 
 		//Validation (Child Function)
-		public function validation( $validation_result ){
+		public function validation( $validation_result ) {
 
 			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-validation.php';
 			return GFRecurly_Validation::instance( $this )->validation( $validation_result );
 		}
 
 		//Validation Parent
-		public function validationParent( $validation_result ){
+		public function validationParent( $validation_result ) {
 
 			return parent::validation( $validation_result );
 		}
 
 		//Update Subscription
-		public function update_subscription( $feed, $submission_data, $form, $entry ){
+		public function update_subscription( $feed, $submission_data, $form, $entry ) {
 
 			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-update-subscription.php';
 			return GFRecurly_Update_Subscription::instance( $this )->update_subscription( $feed, $submission_data, $form, $entry );
 		}
 
 		//Update Billing Information
-		public function update_billing_information( $feed, $submission_data, $form, $entry ){
+		public function update_billing_information( $feed, $submission_data, $form, $entry ) {
 
 			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-update-billing-information.php';
 			return GFRecurly_Update_Billing_Information::instance( $this )->update_billing_information( $feed, $submission_data, $form, $entry );
+		}
+
+		//Entry Post Save
+		public function gfrecurly_entry_post_save( $entry, $form ) {
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-entry-post-save.php';
+			return GFRecurly_Entry_Post_Save::instance( $this )->gfrecurly_entry_post_save( $entry, $form );
+		}
+
+		//Process Update Billing
+		public function process_update_billing( $authorization, $feed, $submission_data, $form, $entry ) {
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-process-update-billing.php';
+			return GFRecurly_Process_Update_Billing::instance( $this )->process_update_billing( $authorization, $feed, $submission_data, $form, $entry );
+		}
+
+		//Process Update Subscription
+		public function process_update_subscription( $authorization, $feed, $submission_data, $form, $entry ) {
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-process-update-subscription.php';
+			return GFRecurly_Process_Update_Subscription::instance( $this )->process_update_subscription( $authorization, $feed, $submission_data, $form, $entry );
+		}
+
+		//Update 'Is Payment Gateway?'
+		public function isPaymentGateway( $is_gateway = false ) {
+
+			$this->is_payment_gateway = $is_gateway;
+		}
+
+		//Get 'Is Payment Gateway?'
+		public function getIsPaymentGateway() {
+
+			return $this->is_payment_gateway;
+		}
+
+		//Update 'Single Submission Feed'
+		public function singleSubmissionFeed( $feed = false ) {
+
+			$this->_single_submission_feed = $feed;
+		}
+
+		//Update 'Current Feed'
+		public function currentFeed( $feed = false ) {
+
+			$this->current_feed = $feed;
+		}
+
+		//Get 'Current Feed'
+		public function getCurrentFeed() {
+
+			return $this->current_feed;
+		}
+
+		//Update 'Current Submission Data'
+		public function currentSubmissionData( $submission_data = false ) {
+
+			$this->current_submission_data = $submission_data;
+		}
+
+		//Get 'Current Submission Data'
+		public function getCurrentSubmissionData() {
+
+			return $this->current_submission_data;
+		}
+
+		//Get Authorization
+		public function getAuthorization() {
+
+			return $this->authorization;
+		}
+
+		//Update Authorization Property
+		public function updateAuthorizationProperty( $auth_key, $auth_val ) {
+
+			$this->authorization[ $auth_key ] = $auth_val;
 		}
 
 		//JS Response
