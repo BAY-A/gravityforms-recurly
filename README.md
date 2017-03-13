@@ -17,3 +17,6 @@ This is a Gravity Forms Add-on, created with the [GFPaymentAddOn class](https://
 - [ ] Implement listener for Recurly webhooks (ie, to suspend a WP user account for non-payment, etc.)
 - [ ] Neaten up returned Recurly data that's saved in the `gf_recurly` database table / standardise it / store it in a useful and meaningful way
 - [ ] Allow storage of users' cards' last four digits (I believe only one payment method can be stored at a time for Recurly user accounts)
+
+## Credits:
+- [Naomi Bush](https://gravityplus.pro/ "GravityPlus") of GravityPlus: Some user account sign-in code in the `GFRecurly_Utils` class, and some database transaction code in the `GFRecurly_Data` inspired by code found in her `Gravity Forms + Stripe` and `Gravity Forms + (More) Stripe` plugins
