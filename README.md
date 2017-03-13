@@ -2,7 +2,7 @@
 Gravity Forms + Recurly payment add-on
 
 ## What is this?
-This is a Gravity Forms Add-on, created with the [GFPaymentAddOn class](https://www.gravityhelp.com/documentation/article/gfpaymentaddon/ "GFPaymentAddOn") for [Backlinko](http://backlinko.com/ "Backlinko"), where I am the CTO.
+This is a Gravity Forms Add-on, created with the [GFPaymentAddOn class](https://www.gravityhelp.com/documentation/article/gfpaymentaddon/ "GFPaymentAddOn") for [Backlinko](http://backlinko.com/ "Backlinko"), where I am the CTO. This is for WordPress websites.
 
 ## What can it do?
 **Currently:**
@@ -12,6 +12,17 @@ This is a Gravity Forms Add-on, created with the [GFPaymentAddOn class](https://
 
 **Future:**
 - Update Recurly subscription: Allow user to change their Recurly subscription; the result of which is then stored/updated as user meta
+
+## How can I use this?
+- Make sure you have [Gravity Forms](https://gravityforms.com/ "Gravity Forms") installed. This Add-on will not work without it.
+- Make sure that you have a Recurly account (Live or Sandbox).
+- After activating this Add-on, in the WordPress Dashboard, go to 'Forms > Settings > Recurly', and enter your Recurly subdomain and Recurly API key. Click Update Settings.
+- For a particular Gravity Form, make sure you have at least a Credit Card field and an Address field. Certain Recurly actions, such as Create Recurly Plan From Subscription, require additional fields. These can be viewed under 'Forms > <form> > Settings > Recurly'.
+- After required fields are linked-up via `Forms > <form> > Settings > Recurly`, save, and it should be good to go.
+
+## Why doesn't X work?
+- That feature may not be finished yet.
+- There may be an error. Please help fix it :)
 
 ## Specific to-dos:
 - [ ] Implement listener for Recurly webhooks (ie, to suspend a WP user account for non-payment, etc.)
