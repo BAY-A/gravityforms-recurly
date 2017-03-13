@@ -87,10 +87,27 @@ class GFRecurly_API_Wrapper {
 
 			$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Account and Billing Information updated.' );
 			return $account;
-			
+
 		} catch ( Exception $e ) {
 
 			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: Could not update billing information: {$e->getMessage()}" );
+			throw new Exception( $e->getMessage() );
+		}
+	}
+
+	/* Terminate Subscription */
+	public function terminate_subscription( $subscription_id ){
+
+		try {
+
+			$subscription = Recurly_Subscription::get( $subscription_id );
+			$subscription->terminateWithoutRefund();
+			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: " . __METHOD__ . ": " . print_r( $subscription, true ) );
+			return true;
+
+		} catch ( Exception $e ) {
+
+			$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: " . __METHOD__ . " : {$e->getMessage()}" );
 			throw new Exception( $e->getMessage() );
 		}
 	}

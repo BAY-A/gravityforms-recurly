@@ -41,13 +41,13 @@ class GFRecurly_User_Registered{
 		$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: form entry id: {$entry_id}" );
 		$this->gfpaymentaddon->log_error( "Gravity Forms + Recurly: form id: {$form_id}" );
 
-		$transaction_type = '';
+		$transaction_type_label = '';
 
 		switch ( $transaction_type ) {
 			case 'subscription':
-				$transaction_type = 'subscription_payment';
+				$transaction_type_label = 'subscription_payment';
 			case 'product':
-				$transaction_type = 'single_payment';
+				$transaction_type_label = 'single_payment';
 			break;
 		}
 
@@ -71,7 +71,7 @@ class GFRecurly_User_Registered{
 					$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Active feeds found, continuing' );
 
 					//Run 'save_recurly_info_to_wp_user'
-					GFRecurly_Utils::save_recurly_info_wp_user( $user_id, $entry_id, $transaction_type, $recurly_object, $last_four );
+					GFRecurly_Utils::save_recurly_info_wp_user( $user_id, $entry_id, $transaction_type_label, $recurly_object, $last_four );
 
 					//Then run 'add_customer_metadata'
 					GFRecurly_Utils::add_customer_metadata( $user_id, $entry_id, $recurly_object );

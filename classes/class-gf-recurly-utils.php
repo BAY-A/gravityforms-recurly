@@ -28,6 +28,23 @@ class GFRecurly_Utils{
 		return $randomString;
 	}
 
+	public static function is_recurly_form( $form, $gfrecurly_payment_addon ) {
+		$is_recurly_form = false;
+
+		if ( is_numeric( $form ) ) {
+			$form = RGFormsModel::get_form_meta( $form );
+		}
+		if ( ( ! $form == null ) && ( GFCommon::has_credit_card_field( $form ) ) ) {
+			$form_feeds = $gfrecurly_payment_addon->get_active_feeds( $form['id'] );
+
+			if ( ! empty( $form_feeds ) ) {
+				$is_recurly_form = true;
+			}
+		}
+
+		return $is_recurly_form;
+	}
+
 	public static function add_note( $entry_id, $note, $note_type = null ) {
 
 		$user_id   = 0;
@@ -301,6 +318,8 @@ class GFRecurly_Utils{
 
 	public static function save_recurly_info_wp_user( $user_id, $entry_id, $transaction_type = 'single_payment', $recurly_object, $last_four = '' ) {
 
+		GFRecurly_Utils::log_debug( __METHOD__ . " : {$user_id}, {$entry_id}, {$transaction_type}, " . print_r( $recurly_object, true ) . ", {$last_four}" );
+
 		GFRecurly_Utils::save_recurly_account_code( $user_id, rgars( $recurly_object, 'account/account_code' ) );
 		GFRecurly_Utils::maybe_save_recurly_account_has_billing_info( $user_id, rgar( $recurly_object, 'account' ), $last_four );
 		GFRecurly_Utils::maybe_save_recurly_account_currency( $user_id, rgar( $recurly_object, 'currency' ) );
@@ -338,6 +357,11 @@ class GFRecurly_Utils{
 		) );
 	}
 
+	public static function recurly_account_billing_info( $user_id ){
+
+		return get_user_meta( $user_id, 'recurly_account_has_billing_info', true ) ?: array();
+	}
+
 	public static function maybe_save_recurly_account_currency( $user_id, $currency = 'USD' ) {
 
 		update_user_meta( $user_id, 'recurly_account_currency', $currency );
@@ -345,27 +369,35 @@ class GFRecurly_Utils{
 
 	public static function maybe_save_recurly_subscription( $user_id, $sub = array(), $sub_state = 'active' ) {
 
+		GFRecurly_Utils::log_debug( __METHOD__ . " : {$user_id}, " . print_r( $sub, true ) . ", {$sub_state}" );
+
 		$acc = rgar( $sub, 'account' );
 
 		if ( $sub_state === rgar( $acc, 'state' ) ) {
 
-			$transaction = rgar( $sub, 'plan_code' );
-			if ( ! in_array( $transaction, GFRecurly_Utils::get_active_recurly_subscriptions( $user_id ) ) ) {
+			$plan_code = rgar( $sub, 'plan_code' );
+			$plan_unique_id = rgar( $sub, 'uuid' );
 
-				GFRecurly_Utils::add_active_recurly_subscription_to_user( $user_id, $transaction );
+			$active_subs = GFRecurly_Utils::get_active_recurly_subscriptions( $user_id );
+
+			if ( !is_array( $active_subs ) || ! in_array( $plan_unique_id, $active_subs ) ) {
+
+				GFRecurly_Utils::add_active_recurly_subscription_to_user( $user_id, $plan_code, $plan_unique_id );
 			}
 		}
 	}
 
 	public static function get_active_recurly_subscriptions( $user_id ) {
 
-		return get_user_meta( $user_id, 'recurly_account_transactions' ) ?: array();
+		return get_user_meta( $user_id, 'recurly_account_transactions', true ) ?: false;
 	}
 
-	public static function add_active_recurly_subscription_to_user( $user_id, $transaction ) {
+	public static function add_active_recurly_subscription_to_user( $user_id, $transaction_code, $transaction_id ) {
 
 		$existing_transactions = GFRecurly_Utils::get_active_recurly_subscriptions( $user_id );
-		$existing_transactions[] = $transaction;
+
+		$existing_transactions[$transaction_code] = $transaction_id;
+
 		update_user_meta( $user_id, 'recurly_account_transactions', $existing_transactions );
 	}
 
@@ -384,5 +416,30 @@ class GFRecurly_Utils{
 		) );
 
 		do_action( 'gf_recurly_add_customer_metadata', $user_id, $entry_id, $recurly_object );
+	}
+
+	public static function get_customer_payment_method_list( $user_id ) {
+
+		$payment_methods = array();
+
+		$default_card = GFRecurly_Utils::recurly_account_billing_info( $user_id );
+
+		if ( ! empty( $default_card ) ) {
+
+			$cards = GFP_More_Stripe_Customer_API::get_stripe_customer_cards( $user_id );
+
+			foreach ( $cards as $card ) {
+
+				$payment_methods[ ] = array_merge( $card, array(
+					'key'     => $card[ 'id' ],
+					'label'   => ( empty( $card[ 'type' ] ) ? $card[ 'brand' ] : $card[ 'type' ] ) . ' (' . __( 'ending in ', 'gravityforms-stripe-more' ) . $card[ 'last4' ] . ')',
+					'default' => GFP_More_Stripe_Customer_API::is_default_card( $user_id, $card[ 'id' ] )
+				) );
+
+			}
+
+		}
+
+		return $payment_methods;
 	}
 }

@@ -62,7 +62,7 @@ class GFRecurly_Feed_Settings_Fields extends GFPaymentAddOn{
 				'title'      => 'Subscription Payment Settings',
 				'dependency' => array(
 					'field'  => 'transactionType',
-					'values' => array( 'subscription' ),
+					'values' => array( 'subscription', 'updateSubscription' ),
 				),
 				'fields'     => array(
 					array(

@@ -57,6 +57,7 @@ class GFRecurly_Validation {
 
 			$this->gfpaymentaddon->updateAuthorizationProperty( 'is_authorized', rgar( $updatedSubscription,'is_success' ) );
 			$this->gfpaymentaddon->updateAuthorizationProperty( 'error_message', rgar( $updatedSubscription,'error_message' ) );
+			$this->gfpaymentaddon->updateAuthorizationProperty( 'recurly_subscription', rgar( $updatedSubscription,'recurly_subscription' ) );
 
 			$performed_authorization = true;
 		}

@@ -54,6 +54,7 @@ if ( method_exists( 'GFForms', 'include_payment_addon_framework' ) ) {
 			add_filter( 'gform_is_delayed_pre_process_feed', array( $this, 'gform_is_delayed_pre_process_feed' ), 10, 4 );
 			add_action( 'gform_pre_process', array( $this, 'gform_pre_process' ) );
 			add_filter( 'gform_entry_post_save', array( $this, 'gfrecurly_entry_post_save' ), 11, 2 );
+			add_filter( 'gform_payment_methods', array( $this, 'gform_payment_methods' ), 10, 3 );
 
 			parent::init();
 		}
@@ -205,6 +206,13 @@ if ( method_exists( 'GFForms', 'include_payment_addon_framework' ) ) {
 
 			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-process-update-subscription.php';
 			return GFRecurly_Process_Update_Subscription::instance( $this )->process_update_subscription( $authorization, $feed, $submission_data, $form, $entry );
+		}
+
+		//Payment Methods
+		public function gform_payment_methods( $payment_methods, $field, $form_id ){
+
+			require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-payment-methods.php';
+			return GFRecurly_Payment_Methods::instance( $this )->gform_payment_methods( $payment_methods, $field, $form_id );
 		}
 
 		//Update 'Is Payment Gateway?'

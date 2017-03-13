@@ -29,7 +29,11 @@ class GFRecurly_Entry_Post_Save {
 
 		$feed = $this->gfpaymentaddon->getCurrentFeed();
 
+		$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: feed: ' . print_r( $feed, true ) );
+
 		if ( ! empty( $this->gfpaymentaddon->getAuthorization() ) ) {
+
+			$this->gfpaymentaddon->log_error( 'Gravity Forms + Recurly: Has authorization' );
 
 			if ( 'updateBilling' === $feed['meta']['transactionType'] ) {
 

@@ -95,6 +95,7 @@ class GFRecurly_API_Utils{
 		$subscription_array['terms_and_conditions'] = $subscription->terms_and_conditions;
 		$subscription_array['bank_account_authorized_at'] = $subscription->bank_account_authorized_at;
 		$subscription_array['revenue_schedule_type'] = $subscription->revenue_schedule_type;
+		$subscription_array['uuid'] = $subscription->uuid;
 
 		return $subscription_array;
 	}
