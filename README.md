@@ -16,7 +16,7 @@ This is a Gravity Forms Add-on allowing you to interact with the [Recurly](https
 ## How can I use this?
 - Make sure you have [Gravity Forms](https://gravityforms.com/ "Gravity Forms") installed. This Add-on will not work without it.
 - Make sure that you have a Recurly account (Live or Sandbox).
-- After activating this Add-on, in the WordPress Dashboard, go to 'Forms > Settings > Recurly', and enter your Recurly subdomain and Recurly API key. Click Update Settings.
+- After activating this Add-on, in the WordPress Dashboard, go to `Forms > Settings > Recurly`, and enter your Recurly subdomain and Recurly API key. Click Update Settings.
 - For a particular Gravity Form, make sure you have at least a Credit Card field and an Address field. Certain Recurly actions, such as Create Recurly Plan From Subscription, require additional fields. These can be viewed under 'Forms > <form> > Settings > Recurly'.
 - After required fields are linked-up via `Forms > <form> > Settings > Recurly`, save, and it should be good to go.
 
