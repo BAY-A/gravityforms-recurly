@@ -2,7 +2,7 @@
 Gravity Forms + Recurly payment add-on
 
 ## What is this?
-This is a Gravity Forms Add-on, created with the [GFPaymentAddOn class](https://www.gravityhelp.com/documentation/article/gfpaymentaddon/ "GFPaymentAddOn") for [Backlinko](http://backlinko.com/ "Backlinko"), where I am the CTO. This is for WordPress websites.
+This is a Gravity Forms Add-on allowing you to interact with the [Recurly](https://recurly.com/ "Recurly") subscription billing management platform, created with the [GFPaymentAddOn class](https://www.gravityhelp.com/documentation/article/gfpaymentaddon/ "GFPaymentAddOn") as an internal project for [Backlinko](http://backlinko.com/ "Backlinko"), where I am the CTO. This is for WordPress websites.
 
 ## What can it do?
 **Currently:**
