@@ -1,4 +1,4 @@
-# Gravity Forms + Recurly (Gravity Forms Add-on)
+# :cyclone::zap:Gravity Forms + Recurly (Gravity Forms Add-on):zap::cyclone:
 Gravity Forms + Recurly payment add-on
 
 ## What is this?
