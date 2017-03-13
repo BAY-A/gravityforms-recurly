@@ -24,6 +24,9 @@ This is a Gravity Forms Add-on allowing you to interact with the [Recurly](https
 - That feature may not be finished yet.
 - There may be an error. Please help fix it :)
 
+## Excuse me, does this use [RecurlyJS](https://recurly.com/recurlyjs/ "RecurlyJS")?
+No, this Add-on does not use RecurlyJS right now. I'd like to, but because of [an issue](https://github.com/recurly/recurly-js/issues/309 "RecurlyJS GitHub"), relating to the constraints of Gravity Forms' fields, I can't.
+
 ## Specific to-dos:
 - [ ] Implement listener for Recurly webhooks (ie, to suspend a WP user account for non-payment, etc.)
 - [ ] Neaten up returned Recurly data that's saved in the `gf_recurly` database table / standardise it / store it in a useful and meaningful way
