@@ -36,7 +36,7 @@ class GFRecurly_Webhook_Handler {
 			* @todo
 			* !!NEED TO CHECK WHETHER SOURCE IP MATCHES THE LEGIT RECURLY IPS!!
 			*/
-			if ( 'gfrecurly_webhooks' == $endpoint ) {
+			if ( 'recurly_listener' == $endpoint ) {
 
 				require_once GF_RECURLY_DIR . 'classes/class-gf-recurly-webhook-process.php';
 				return GFRecurly_Webhook_Process::instance( $this->gfpaymentaddon )->process_event( $endpoint );
