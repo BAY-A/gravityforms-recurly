@@ -19,10 +19,12 @@ class GFRecurly_Webhook_Process {
 		require_once GF_RECURLY_DIR . 'includes/recurly-api/lib/recurly.php';
 
 		$this->gfpaymentaddon = $gfpaymentaddon;
-		$this->client = new Recurly_Client();
 
-		$this->client::$subdomain = rgar( $this->gfpaymentaddon->get_plugin_settings(), 'gf_recurly_subdomain' );
-		$this->client::$apiKey = rgar( $this->gfpaymentaddon->get_plugin_settings(), 'gf_recurly_api_key' );
+		$client = new Recurly_Client();
+		$client::$subdomain = rgar( $this->gfpaymentaddon->get_plugin_settings(), 'gf_recurly_subdomain' );
+		$client::$apiKey = rgar( $this->gfpaymentaddon->get_plugin_settings(), 'gf_recurly_api_key' );
+
+		$this->client = $client;
 	}
 
 	public function process_event( $endpoint ){
