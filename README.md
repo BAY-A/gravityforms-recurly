@@ -1,4 +1,4 @@
-[![License](https://poser.pugx.org/phpunit/phpunit/license)](https://packagist.org/packages/phpunit/phpunit)
+[![License](https://poser.pugx.org/BAY-A/gravityforms-recurly/license)](https://packagist.org/packages/BAY-A/gravityforms-recurly)
 
 # :cyclone::zap:Gravity Forms + Recurly (Gravity Forms Add-on):zap::cyclone:
 Gravity Forms + Recurly payment add-on
